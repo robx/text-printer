@@ -62,6 +62,7 @@ module Text.Printer
   , crlfPrinter
   -- * Default printers
   , Printable(..)
+  , defaultPrintList
   , toString
   ) where
 
