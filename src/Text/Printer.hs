@@ -22,8 +22,12 @@ module Text.Printer
   -- * Combinators
   , (<>)
   , hcat
+  , fcat
+  , separate
   , (<+>)
   , hsep
+  , fsep
+  , list
   , parens
   , brackets
   , braces
@@ -61,7 +65,7 @@ module Text.Printer
   , toString
   ) where
 
-import Prelude hiding (foldr, print, lines)
+import Prelude hiding (foldr, foldr1, print, lines)
 import Data.Typeable (Typeable)
 import Data.Int
 import Data.Word
@@ -69,7 +73,7 @@ import Data.Bits (Bits(..))
 import Data.Char (chr, ord)
 import Data.String (IsString(..))
 import Data.Monoid (Monoid(..), (<>))
-import Data.Foldable (Foldable(..))
+import Data.Foldable (Foldable(..), toList)
 import Data.Traversable (Traversable, mapAccumL, mapAccumR)
 import qualified Data.Text as TS
 import qualified Data.Text.Encoding as TS
@@ -224,18 +228,48 @@ hcat ∷ (Printer p, Foldable f) ⇒ f p → p
 hcat = fold
 {-# INLINE hcat #-}
 
+-- | Combine the items of a 'Foldable' data structure using the provided
+--   function. If the data structure is empty, 'mempty' is returned.
+fcat ∷ (Foldable f, Printer p) ⇒ (p → p → p) → f p → p
+fcat c f = case toList f of
+  [] → mempty
+  ps → foldr1 c ps
+{-# INLINABLE fcat #-}
+
+-- | Concatenate two 'Printer's with a separator between them.
+separate ∷ Printer p
+         ⇒ p -- ^ The separator
+         → p → p → p
+separate s x y = x <> s <> y
+{-# INLINE separate #-}
+
 infixr 6 <+>
 
 -- | Concatenate two 'Printer's with a space between them.
 (<+>) ∷ Printer p ⇒ p → p → p
-x <+> y = x <> char7 ' ' <> y
+(<+>) = separate (char7 ' ')
 {-# INLINE (<+>) #-}
 
 -- | Concatenate the items of a 'Foldable' data structure
 --   with spaces between them.
 hsep ∷ (Printer p, Foldable f) ⇒ f p → p
-hsep = foldr (<+>) mempty
+hsep = fcat (<+>)
 {-# INLINE hsep #-}
+
+-- | An alias for @'fcat' . 'separate'@.
+fsep ∷ (Foldable f, Printer p) ⇒ p → f p → p
+fsep = fcat . separate
+{-# INLINE fsep #-}
+
+-- | Concatenate the items of a 'Foldable' data structure with commas
+--   between them.
+--
+-- @
+--   'list' = 'fsep' ('char7' ',')
+-- @
+list ∷ (Foldable f, Printer p) ⇒ f p → p
+list = fsep (char7 ',')
+{-# INLINE list #-}
 
 -- | Enclose a 'Printer' with parentheses.
 parens ∷ Printer p ⇒ p → p
@@ -606,7 +640,7 @@ instance MultilinePrinter PP.Doc where
 
 -- | Combine the items of a 'Foldable' data structure with '<->'.
 lines ∷ (MultilinePrinter p, Foldable f) ⇒ f p → p
-lines = foldr (<->) mempty
+lines = fcat (<->)
 {-# INLINE lines #-}
 
 -- | Print the LF character (/'\n'/).
@@ -664,24 +698,38 @@ instance Printer p ⇒ MultilinePrinter (LinePrinter p) where
 
 -- | Separate lines with 'newLine'.
 lfPrinter ∷ Printer p ⇒ LinePrinter p → p
-lfPrinter p = linePrinter p (\x y → x <> newLine <> y)
+lfPrinter p = linePrinter p (separate newLine)
 {-# INLINE lfPrinter #-}
 
 -- | Separate lines with 'crlf'.
 crlfPrinter ∷ Printer p ⇒ LinePrinter p → p
-crlfPrinter p = linePrinter p (\x y → x <> crlf <> y)
+crlfPrinter p = linePrinter p (separate crlf)
 {-# INLINE crlfPrinter #-}
 
 -- | The default printer for values of a type.
 class Printable α where
   print ∷ Printer p ⇒ α → p
+  printList ∷ Printer p ⇒ [α] → p
+  printList = defaultPrintList
+  {-# INLINE printList #-}
+
+defaultPrintList ∷ (Printable α, Printer p) ⇒ [α] → p
+defaultPrintList = brackets . list . map print
+{-# INLINE defaultPrintList #-}
 
 instance Printable () where
   print _ = string7 "()"
+  {-# INLINE print #-}
+
+instance Printable α ⇒ Printable [α] where
+  print = printList
+  {-# INLINE print #-}
 
 instance Printable Char where
   print = char
   {-# INLINE print #-}
+  printList = string
+  {-# INLINE printList #-}
 
 instance Printable TS.Text where
   print = text
