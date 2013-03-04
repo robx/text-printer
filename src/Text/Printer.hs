@@ -257,7 +257,7 @@ hsep ∷ (Printer p, Foldable f) ⇒ f p → p
 hsep = fcat (<+>)
 {-# INLINE hsep #-}
 
--- | An alias for @'fcat' . 'separate'@.
+-- | A shorthand for @'fcat' . 'separate'@.
 fsep ∷ (Foldable f, Printer p) ⇒ p → f p → p
 fsep = fcat . separate
 {-# INLINE fsep #-}
@@ -722,6 +722,19 @@ instance Printable () where
   print _ = string7 "()"
   {-# INLINE print #-}
 
+instance (Printable α, Printable β) ⇒ Printable (α, β) where
+  print (a, b) = parens $ list [print a, print b]
+  {-# INLINE print #-}
+
+instance (Printable α, Printable β, Printable γ) ⇒ Printable (α, β, γ) where
+  print (a, b, c) = parens $ list [print a, print b, print c]
+  {-# INLINE print #-}
+
+instance (Printable α, Printable β, Printable γ, Printable δ)
+         ⇒ Printable (α, β, γ, δ) where
+  print (a, b, c, d) = parens $ list [print a, print b, print c, print d]
+  {-# INLINE print #-}
+
 instance Printable α ⇒ Printable [α] where
   print = printList
   {-# INLINE print #-}
@@ -782,6 +795,14 @@ instance Printable Word32 where
 
 instance Printable Word64 where
   print = unsignedDecimal
+  {-# INLINE print #-}
+
+instance Printable Float where
+  print = string7 . show
+  {-# INLINE print #-}
+
+instance Printable Double where
+  print = string7 . show
   {-# INLINE print #-}
 
 -- | Print a 'Printable' value via 'StringBuilder', i.e.
