@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE UnicodeSyntax #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DeriveDataTypeable #-}
@@ -223,6 +224,13 @@ buildUtf8 = BB.toLazyByteString . utf8Builder
 instance Printer PP.Doc where
   char = PP.char
   {-# INLINE char #-}
+
+#if !MIN_VERSION_base(4,5,0)
+-- | An infix synonym for 'mappend'.
+(<>) ∷ Monoid m ⇒ m → m → m
+(<>) = mappend
+{-# INLINE (<>) #-}
+#endif
 
 -- | 'mconcat' for 'Foldable' data structures.
 hcat ∷ (Printer p, Foldable f) ⇒ f p → p
