@@ -61,10 +61,6 @@ module Text.Printer
   , LinePrinter(..)
   , lfPrinter
   , crlfPrinter
-  -- * Default printers
-  , Printable(..)
-  , defaultPrintList
-  , toString
   ) where
 
 import Prelude hiding (foldr, foldr1, print, lines)
@@ -714,108 +710,4 @@ lfPrinter p = linePrinter p (separate newLine)
 crlfPrinter ∷ Printer p ⇒ LinePrinter p → p
 crlfPrinter p = linePrinter p (separate crlf)
 {-# INLINE crlfPrinter #-}
-
--- | The default printer for values of a type.
-class Printable α where
-  print ∷ Printer p ⇒ α → p
-  printList ∷ Printer p ⇒ [α] → p
-  printList = defaultPrintList
-  {-# INLINE printList #-}
-
-defaultPrintList ∷ (Printable α, Printer p) ⇒ [α] → p
-defaultPrintList = brackets . list . map print
-{-# INLINE defaultPrintList #-}
-
-instance Printable () where
-  print _ = string7 "()"
-  {-# INLINE print #-}
-
-instance (Printable α, Printable β) ⇒ Printable (α, β) where
-  print (a, b) = parens $ list [print a, print b]
-  {-# INLINE print #-}
-
-instance (Printable α, Printable β, Printable γ) ⇒ Printable (α, β, γ) where
-  print (a, b, c) = parens $ list [print a, print b, print c]
-  {-# INLINE print #-}
-
-instance (Printable α, Printable β, Printable γ, Printable δ)
-         ⇒ Printable (α, β, γ, δ) where
-  print (a, b, c, d) = parens $ list [print a, print b, print c, print d]
-  {-# INLINE print #-}
-
-instance Printable α ⇒ Printable [α] where
-  print = printList
-  {-# INLINE print #-}
-
-instance Printable Char where
-  print = char
-  {-# INLINE print #-}
-  printList = string
-  {-# INLINE printList #-}
-
-instance Printable TS.Text where
-  print = text
-  {-# INLINE print #-}
-
-instance Printable TL.Text where
-  print = lazyText
-  {-# INLINE print #-}
-
-instance Printable Integer where
-  print = decimal
-  {-# INLINE print #-}
-
-instance Printable Int where
-  print = decimal
-  {-# INLINE print #-}
-
-instance Printable Int8 where
-  print = decimal
-  {-# INLINE print #-}
-
-instance Printable Int16 where
-  print = decimal
-  {-# INLINE print #-}
-
-instance Printable Int32 where
-  print = decimal
-  {-# INLINE print #-}
-
-instance Printable Int64 where
-  print = decimal
-  {-# INLINE print #-}
-
-instance Printable Word where
-  print = unsignedDecimal
-  {-# INLINE print #-}
-
-instance Printable Word8 where
-  print = unsignedDecimal
-  {-# INLINE print #-}
-
-instance Printable Word16 where
-  print = unsignedDecimal
-  {-# INLINE print #-}
-
-instance Printable Word32 where
-  print = unsignedDecimal
-  {-# INLINE print #-}
-
-instance Printable Word64 where
-  print = unsignedDecimal
-  {-# INLINE print #-}
-
-instance Printable Float where
-  print = string7 . show
-  {-# INLINE print #-}
-
-instance Printable Double where
-  print = string7 . show
-  {-# INLINE print #-}
-
--- | Print a 'Printable' value via 'StringBuilder', i.e.
---   @'toString' = 'buildString' . 'print'@.
-toString ∷ Printable α ⇒ α → String
-toString = buildString . print
-{-# INLINE toString #-}
 
