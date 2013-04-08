@@ -478,9 +478,9 @@ binary' neg z pos n = case compare n 0 of
 {-# SPECIALIZE binary' ∷ Printer p ⇒ p → p → p → Word64 → p #-}
 
 -- | Print a number in the binary numeral system. Negative values
---   are prefixed with \"-0b\", postive values are prefixed with \"0b\".
+--   are prefixed with a minus sign.
 binary ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
-binary = binary' (string7 "-0b") mempty (string7 "0b")
+binary = binary' (char7 '-') mempty mempty
 {-# INLINE binary #-}
 
 -- | Print a number in the octal numeral system.
@@ -529,9 +529,9 @@ octal' neg z pos n = case compare n 0 of
 {-# SPECIALIZE octal' ∷ Printer p ⇒ p → p → p → Word64 → p #-}
 
 -- | Print a number in the octal numeral system. Negative values
---   are prefixed with \"-0o\", postive values are prefixed with \"0o\".
+--   are prefixed with a minus sign.
 octal ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
-octal = octal' (string7 "-0o") mempty (string7 "0o")
+octal = octal' (char7 '-') mempty mempty
 {-# INLINE octal #-}
 
 hex' ∷ (Ord α, Num α, Bits α, Printer p) ⇒ Int → p → p → p → α → p
@@ -593,10 +593,9 @@ lowHex' = hex' (ord 'a')
 {-# INLINE lowHex' #-}
 
 -- | Print a number in the hexadecimal numeral system using lower case
---   digits. Negative values are prefixed with \"-0x\", positive values
---   are prefixed with \"0x\".
+--   digits. Negative values are prefixed with a minus sign.
 lowHex ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
-lowHex = lowHex' (string7 "-0x") mempty (string7 "0x")
+lowHex = lowHex' (char7 '-') mempty mempty
 {-# INLINE lowHex #-}
 
 -- | Print a number in the hexadecimal numeral system using upper case
@@ -610,10 +609,9 @@ upHex' = hex' (ord 'A')
 {-# INLINE upHex' #-}
 
 -- | Print a number in the hexadecimal numeral system using upper case
---   digits. Negative values are prefixed with \"-0x\", positive values
---   are prefixed with \"0x\".
+--   digits. Negative values are prefixed with a minus sign.
 upHex ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
-upHex = upHex' (string7 "-0x") mempty (string7 "0x")
+upHex = upHex' (char7 '-') mempty mempty
 {-# INLINE upHex #-}
 
 -- | Print a number in the decimal numeral system.
@@ -646,7 +644,7 @@ decimal' neg z pos n = case compare n 0 of
 {-# SPECIALIZE decimal' ∷ Printer p ⇒ p → p → p → Word64 → p #-}
 
 -- | Print a number in the decimal numeral system. Negative values
---   are prefixed with \"-\".
+--   are prefixed with a minus sign.
 decimal ∷ (Integral α, Printer p) ⇒ α → p
 decimal = decimal' (char7 '-') mempty mempty
 {-# INLINE decimal #-}

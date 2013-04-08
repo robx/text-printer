@@ -25,26 +25,26 @@ main = defaultMain
       if (i ∷ Int) == 0
       then binary i == "0"
       else if i < 0
-           then binary i == "-0b" ++ showBinary (negate $ toInteger i)
-           else binary i == "0b" ++ showBinary i
+           then binary i == '-' : showBinary (negate $ toInteger i)
+           else binary i == showBinary i
   , testProperty "octal" $ \i →
       if (i ∷ Int) == 0
       then octal i == "0"
       else if i < 0
-           then octal i == (printf "-0o%o" (negate $ toInteger i) ∷ String)
-           else octal i == (printf "0o%o" i ∷ String)
+           then octal i == (printf "-%o" (negate $ toInteger i) ∷ String)
+           else octal i == (printf "%o" i ∷ String)
   , testProperty "lowHex" $ \i →
       if (i ∷ Int) == 0
       then lowHex i == "0"
       else if i < 0
-           then lowHex i == (printf "-0x%x" (negate $ toInteger i) ∷ String)
-           else lowHex i == (printf "0x%x" i ∷ String)
+           then lowHex i == (printf "-%x" (negate $ toInteger i) ∷ String)
+           else lowHex i == (printf "%x" i ∷ String)
   , testProperty "upHex" $ \i →
       if (i ∷ Int) == 0
       then upHex i == "0"
       else if i < 0
-           then upHex i == (printf "-0x%X" (negate $ toInteger i) ∷ String)
-           else upHex i == (printf "0x%X" i ∷ String)
+           then upHex i == (printf "-%X" (negate $ toInteger i) ∷ String)
+           else upHex i == (printf "%X" i ∷ String)
   , testProperty "decimal" $ \i →
       decimal i == show (i ∷ Int)
   ]
