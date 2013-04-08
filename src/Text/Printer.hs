@@ -16,10 +16,14 @@ module Text.Printer
   -- * Builders
   , StringBuilder(..)
   , buildString
+  , buildText
+  , buildLazyText
   , AsciiBuilder(..)
   , buildAscii
+  , buildLazyAscii
   , Utf8Builder(..)
   , buildUtf8
+  , buildLazyUtf8
   -- * Combinators
   , (<>)
   , hcat
@@ -160,6 +164,14 @@ instance Printer TB.Builder where
   lazyText = TB.fromLazyText
   {-# INLINE lazyText #-}
 
+buildText ∷ TB.Builder → TS.Text
+buildText = fold . TL.toChunks . buildLazyText
+{-# INLINE buildText #-}
+
+buildLazyText ∷ TB.Builder → TL.Text
+buildLazyText = TB.toLazyText
+{-# INLINE buildLazyText #-}
+
 -- | Use this builder when you are sure that only ASCII characters
 --   will get printed to it.
 newtype AsciiBuilder = AsciiBuilder { asciiBuilder ∷ BB.Builder }
@@ -181,9 +193,13 @@ instance Printer AsciiBuilder where
   lazyUtf8 = AsciiBuilder . BB.lazyByteString
   {-# INLINE lazyUtf8 #-}
 
-buildAscii ∷ AsciiBuilder → BL.ByteString
-buildAscii = BB.toLazyByteString . asciiBuilder
+buildAscii ∷ AsciiBuilder → BS.ByteString
+buildAscii = fold . BL.toChunks . buildLazyAscii
 {-# INLINE buildAscii #-}
+
+buildLazyAscii ∷ AsciiBuilder → BL.ByteString
+buildLazyAscii = BB.toLazyByteString . asciiBuilder
+{-# INLINE buildLazyAscii #-}
 
 -- | UTF-8 lazy 'BL.ByteString' builder.
 newtype Utf8Builder = Utf8Builder { utf8Builder ∷ BB.Builder }
@@ -213,9 +229,13 @@ instance Printer Utf8Builder where
   lazyUtf8 = Utf8Builder . BB.lazyByteString
   {-# INLINE lazyUtf8 #-}
 
-buildUtf8 ∷ Utf8Builder → BL.ByteString
-buildUtf8 = BB.toLazyByteString . utf8Builder
+buildUtf8 ∷ Utf8Builder → BS.ByteString
+buildUtf8 = fold . BL.toChunks . buildLazyUtf8
 {-# INLINE buildUtf8 #-}
+
+buildLazyUtf8 ∷ Utf8Builder → BL.ByteString
+buildLazyUtf8 = BB.toLazyByteString . utf8Builder
+{-# INLINE buildLazyUtf8 #-}
 
 instance Printer PP.Doc where
   char = PP.char
