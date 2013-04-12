@@ -35,6 +35,7 @@ Library
   GHC-Options: -Wall
   Exposed-Modules:
     Text.Printer
+    Text.Printer.Numerals
 
 Test-Suite tests
   Default-Language: Haskell2010

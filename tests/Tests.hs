@@ -9,7 +9,7 @@ import Data.Word (Word)
 import Data.Char (intToDigit)
 import Numeric (showIntAtBase)
 import Text.Printf (printf)
-import Text.Printer
+import Text.Printer.Numerals
 
 main = defaultMain
   [ testProperty "nnBinary" $ \w →
