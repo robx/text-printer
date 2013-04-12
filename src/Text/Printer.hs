@@ -42,21 +42,58 @@ module Text.Printer
   , punctuateL
   , punctuateR
   -- * Number printers
-  , unsignedBinary
-  , unsignedOctal
-  , unsignedUpHex
-  , unsignedLowHex
-  , unsignedDecimal
+  , PositionalSystem(..)
+  , BitSystem(..)
+  , Binary(..)
+  , Octal(..)
+  , Decimal(..)
+  , Hexadecimal(..)
+  , LowHex(..)
+  , UpHex(..)
+  , nonNegative
+  , nnBinary
+  , nnOctal
+  , nnDecimal
+  , nnLowHex
+  , nnUpHex
+  , nnBits
+  , nnBinaryBits
+  , nnOctalBits
+  , nnLowHexBits
+  , nnUpHexBits
+  , nonPositive
+  , npBinary
+  , npOctal
+  , npDecimal
+  , npLowHex
+  , npUpHex
+  , npBits
+  , npBinaryBits
+  , npOctalBits
+  , npLowHexBits
+  , npUpHexBits
+  , number'
+  , number
   , binary'
   , binary
   , octal'
   , octal
+  , decimal'
+  , decimal
   , lowHex'
   , lowHex
   , upHex'
   , upHex
-  , decimal'
-  , decimal
+  , bits'
+  , bits
+  , binaryBits'
+  , binaryBits
+  , octalBits'
+  , octalBits
+  , lowHexBits'
+  , lowHexBits
+  , upHexBits'
+  , upHexBits
   -- * Multiline printers
   , MultilinePrinter(..)
   , lines
@@ -88,6 +125,7 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Lazy.Char8 as BL8
 import qualified Data.ByteString.Lazy.Builder as BB
 import qualified Text.PrettyPrint as PP
+import qualified Text.Ascii as A
 
 -- | Text monoid. 'string' must be equivalent to 'fromString' and be a monoid
 --   homomorphism, i.e. @'string' 'mempty' = 'mempty'@ and
@@ -343,311 +381,782 @@ punctuateR p =
   snd . mapAccumR (\l a → if l then (False, a) else (False, a <> p)) True
 {-# INLINE punctuateR #-}
 
--- | Print an unsigned number in the binary numeral system.
-unsignedBinary ∷ (Num α, Bits α, Printer p) ⇒ α → p
-unsignedBinary = go (char7 '0')
-  where go p 0 = p
-        go _ m = go mempty (shiftR m 1) <> char7 c
-          where !c = if testBit m 0 then '1' else '0'
-{-# INLINABLE unsignedBinary #-}
-{-# SPECIALIZE unsignedBinary ∷ Printer p ⇒ Int → p #-}
-{-# SPECIALIZE unsignedBinary ∷ Printer p ⇒ Int8 → p #-}
-{-# SPECIALIZE unsignedBinary ∷ Printer p ⇒ Int16 → p #-}
-{-# SPECIALIZE unsignedBinary ∷ Printer p ⇒ Int32 → p #-}
-{-# SPECIALIZE unsignedBinary ∷ Printer p ⇒ Int64 → p #-}
-{-# SPECIALIZE unsignedBinary ∷ Printer p ⇒ Word → p #-}
-{-# SPECIALIZE unsignedBinary ∷ Printer p ⇒ Word8 → p #-}
-{-# SPECIALIZE unsignedBinary ∷ Printer p ⇒ Word16 → p #-}
-{-# SPECIALIZE unsignedBinary ∷ Printer p ⇒ Word32 → p #-}
-{-# SPECIALIZE unsignedBinary ∷ Printer p ⇒ Word64 → p #-}
+-- | Positional numeral system.
+class PositionalSystem s where
+  -- | The name of the system (e.g. \"binary\", \"decimal\").
+  systemName ∷ s → String
+  -- | The radix of the system.
+  radixIn ∷ Num α ⇒ s → α
+  -- | Test if a character is a digit.
+  isDigitIn ∷ s → Char → Bool
+  -- | Test if a character is a non-zero digit.
+  isNzDigitIn ∷ s → Char → Bool
+  -- | Map digits to the corresponding numbers. Return 'Nothing' on
+  --   other inputs.
+  fromDigitIn ∷ Num α ⇒ s → Char → Maybe α
+  -- | Map non-zero digits to the corresponding numbers. Return 'Nothing' on
+  --   other inputs.
+  fromNzDigitIn ∷ Num α ⇒ s → Char → Maybe α
+  -- | Map digits to the corresponding numbers. No checks are performed.
+  unsafeFromDigitIn ∷ Num α ⇒ s → Char → α
+  -- | Map 'Int' values to the corresponding digits. Inputs /must/ be
+  --   non-negative and less than the radix.
+  intToDigitIn ∷ s → Int → Char
+  -- | Print a digit.
+  printDigitIn ∷ Printer p ⇒ s → Char → p
+  printDigitIn _ = char7
+  {-# INLINE printDigitIn #-}
 
--- | Print an unsigned number in the octal numeral system.
-unsignedOctal ∷ (Num α, Bits α, Printer p) ⇒ α → p
-unsignedOctal = go (char7 '0')
-  where go p 0 = p
-        go _ m = go mempty (shiftR m 3) <> char7 c
-          where !r = (if testBit m 0 then 1 else 0)
-                   + (if testBit m 1 then 2 else 0)
-                   + (if testBit m 2 then 4 else 0)
-                !c = chr $ ord '0' + r
-{-# INLINABLE unsignedOctal #-}
-{-# SPECIALIZE unsignedOctal ∷ Printer p ⇒ Int → p #-}
-{-# SPECIALIZE unsignedOctal ∷ Printer p ⇒ Int8 → p #-}
-{-# SPECIALIZE unsignedOctal ∷ Printer p ⇒ Int16 → p #-}
-{-# SPECIALIZE unsignedOctal ∷ Printer p ⇒ Int32 → p #-}
-{-# SPECIALIZE unsignedOctal ∷ Printer p ⇒ Int64 → p #-}
-{-# SPECIALIZE unsignedOctal ∷ Printer p ⇒ Word → p #-}
-{-# SPECIALIZE unsignedOctal ∷ Printer p ⇒ Word8 → p #-}
-{-# SPECIALIZE unsignedOctal ∷ Printer p ⇒ Word16 → p #-}
-{-# SPECIALIZE unsignedOctal ∷ Printer p ⇒ Word32 → p #-}
-{-# SPECIALIZE unsignedOctal ∷ Printer p ⇒ Word64 → p #-}
+-- | Positonal numeral system with a power of two radix.
+class PositionalSystem s ⇒ BitSystem s where
+  -- | Numer of bits occupied by a digit.
+  digitBitsIn ∷ s → Int
+  -- | The number that has 'digitBitsIn' least significant bits set to ones
+  --   and all the other bits set to zeroes.
+  digitMaskIn ∷ Num α ⇒ s → α
+  -- | Map the last digit of a number to the corresponding 'Int' value.
+  lastDigitIn ∷ Bits α ⇒ s → α → Int
 
--- | Print an unsigned number in the hexadecimal numeral system
+-- | The binary numeral system.
+data Binary = Binary deriving (Typeable, Eq, Ord, Show, Read)
+
+instance PositionalSystem Binary where
+  systemName _ = "binary"
+  {-# INLINE systemName #-}
+  radixIn _ = 2
+  {-# INLINE radixIn #-}
+  isDigitIn _ = A.isBinDigit
+  {-# INLINE isDigitIn #-}
+  isNzDigitIn _ = A.isNzBinDigit
+  {-# INLINE isNzDigitIn #-}
+  fromDigitIn _ = A.fromBinDigit
+  {-# INLINE fromDigitIn #-}
+  fromNzDigitIn _ = A.fromNzBinDigit
+  {-# INLINE fromNzDigitIn #-}
+  unsafeFromDigitIn _ = A.unsafeFromBinDigit
+  {-# INLINE unsafeFromDigitIn #-}
+  intToDigitIn _ i = chr $! ord '0' + i
+  {-# INLINE intToDigitIn #-}
+
+instance BitSystem Binary where
+  digitBitsIn _ = 1
+  {-# INLINE digitBitsIn #-}
+  digitMaskIn _ = 1
+  {-# INLINE digitMaskIn #-}
+  lastDigitIn _ n = if testBit n 0 then 1 else 0
+  {-# INLINE lastDigitIn #-}
+
+-- | The octal numeral system.
+data Octal = Octal deriving (Typeable, Eq, Ord, Show, Read)
+
+instance PositionalSystem Octal where
+  systemName _ = "octal"
+  {-# INLINE systemName #-}
+  radixIn _ = 8
+  {-# INLINE radixIn #-}
+  isDigitIn _ = A.isOctDigit
+  {-# INLINE isDigitIn #-}
+  isNzDigitIn _ = A.isNzOctDigit
+  {-# INLINE isNzDigitIn #-}
+  fromDigitIn _ = A.fromOctDigit
+  {-# INLINE fromDigitIn #-}
+  fromNzDigitIn _ = A.fromNzOctDigit
+  {-# INLINE fromNzDigitIn #-}
+  unsafeFromDigitIn _ = A.unsafeFromOctDigit
+  {-# INLINE unsafeFromDigitIn #-}
+  intToDigitIn _ i = chr $! ord '0' + i
+  {-# INLINE intToDigitIn #-}
+
+instance BitSystem Octal where
+  digitBitsIn _ = 3
+  {-# INLINE digitBitsIn #-}
+  digitMaskIn _ = 7
+  {-# INLINE digitMaskIn #-}
+  lastDigitIn _ n = (if testBit n 0 then 1 else 0)
+                  + (if testBit n 1 then 2 else 0)
+                  + (if testBit n 2 then 4 else 0)
+  {-# INLINE lastDigitIn #-}
+
+-- | The decimal numeral system.
+data Decimal = Decimal deriving (Typeable, Eq, Ord, Show, Read)
+
+instance PositionalSystem Decimal where
+  systemName _ = "decimal"
+  {-# INLINE systemName #-}
+  radixIn _ = 10
+  {-# INLINE radixIn #-}
+  isDigitIn _ = A.isDecDigit
+  {-# INLINE isDigitIn #-}
+  isNzDigitIn _ = A.isNzDecDigit
+  {-# INLINE isNzDigitIn #-}
+  fromDigitIn _ = A.fromDecDigit
+  {-# INLINE fromDigitIn #-}
+  fromNzDigitIn _ = A.fromNzDecDigit
+  {-# INLINE fromNzDigitIn #-}
+  unsafeFromDigitIn _ = A.unsafeFromDecDigit
+  {-# INLINE unsafeFromDigitIn #-}
+  intToDigitIn _ i = chr $! ord '0' + i
+  {-# INLINE intToDigitIn #-}
+
+-- | The hexadecimal numeral system.
+data Hexadecimal = Hexadecimal
+
+instance PositionalSystem Hexadecimal where
+  systemName _ = "hexadecimal"
+  {-# INLINE systemName #-}
+  radixIn _ = 16
+  {-# INLINE radixIn #-}
+  isDigitIn _ = A.isHexDigit
+  {-# INLINE isDigitIn #-}
+  isNzDigitIn _ = A.isNzHexDigit
+  {-# INLINE isNzDigitIn #-}
+  fromDigitIn _ = A.fromHexDigit
+  {-# INLINE fromDigitIn #-}
+  fromNzDigitIn _ = A.fromNzHexDigit
+  {-# INLINE fromNzDigitIn #-}
+  unsafeFromDigitIn _ = A.unsafeFromHexDigit
+  {-# INLINE unsafeFromDigitIn #-}
+  intToDigitIn _ i | i < 10    = chr $! ord '0' + i
+                   | otherwise = chr $! ord 'A' + (i - 10) 
+  {-# INLINE intToDigitIn #-}
+
+instance BitSystem Hexadecimal where
+  digitBitsIn _ = 4
+  {-# INLINE digitBitsIn #-}
+  digitMaskIn _ = 15
+  {-# INLINE digitMaskIn #-}
+  lastDigitIn _ n = (if testBit n 0 then 1 else 0)
+                  + (if testBit n 1 then 2 else 0)
+                  + (if testBit n 2 then 4 else 0)
+                  + (if testBit n 3 then 8 else 0)
+  {-# INLINABLE lastDigitIn #-}
+
+-- | The hexadecimal numeral system, using lower case digits.
+data LowHex = LowHex
+
+instance PositionalSystem LowHex where
+  systemName _ = "lower case hexadecimal"
+  {-# INLINE systemName #-}
+  radixIn _ = 16
+  {-# INLINE radixIn #-}
+  isDigitIn _ = A.isUpHexDigit
+  {-# INLINE isDigitIn #-}
+  isNzDigitIn _ = A.isNzUpHexDigit
+  {-# INLINE isNzDigitIn #-}
+  fromDigitIn _ = A.fromUpHexDigit
+  {-# INLINE fromDigitIn #-}
+  fromNzDigitIn _ = A.fromNzUpHexDigit
+  {-# INLINE fromNzDigitIn #-}
+  unsafeFromDigitIn _ = A.unsafeFromUpHexDigit
+  {-# INLINE unsafeFromDigitIn #-}
+  intToDigitIn _ i | i < 10    = chr $! ord '0' + i
+                   | otherwise = chr $! ord 'a' + (i - 10) 
+  {-# INLINE intToDigitIn #-}
+
+instance BitSystem LowHex where
+  digitBitsIn _ = 4
+  {-# INLINE digitBitsIn #-}
+  digitMaskIn _ = 15
+  {-# INLINE digitMaskIn #-}
+  lastDigitIn _ n = (if testBit n 0 then 1 else 0)
+                  + (if testBit n 1 then 2 else 0)
+                  + (if testBit n 2 then 4 else 0)
+                  + (if testBit n 3 then 8 else 0)
+  {-# INLINABLE lastDigitIn #-}
+
+-- | The hexadecimal numeral system, using upper case digits.
+data UpHex = UpHex
+
+instance PositionalSystem UpHex where
+  systemName _ = "upper case hexadecimal"
+  {-# INLINE systemName #-}
+  radixIn _ = 16
+  {-# INLINE radixIn #-}
+  isDigitIn _ = A.isUpHexDigit
+  {-# INLINE isDigitIn #-}
+  isNzDigitIn _ = A.isNzUpHexDigit
+  {-# INLINE isNzDigitIn #-}
+  fromDigitIn _ = A.fromUpHexDigit
+  {-# INLINE fromDigitIn #-}
+  fromNzDigitIn _ = A.fromNzUpHexDigit
+  {-# INLINE fromNzDigitIn #-}
+  unsafeFromDigitIn _ = A.unsafeFromUpHexDigit
+  {-# INLINE unsafeFromDigitIn #-}
+  intToDigitIn _ i | i < 10    = chr $! ord '0' + i
+                   | otherwise = chr $! ord 'A' + (i - 10) 
+  {-# INLINE intToDigitIn #-}
+
+instance BitSystem UpHex where
+  digitBitsIn _ = 4
+  {-# INLINE digitBitsIn #-}
+  digitMaskIn _ = 15
+  {-# INLINE digitMaskIn #-}
+  lastDigitIn _ n = (if testBit n 0 then 1 else 0)
+                  + (if testBit n 1 then 2 else 0)
+                  + (if testBit n 2 then 4 else 0)
+                  + (if testBit n 3 then 8 else 0)
+  {-# INLINABLE lastDigitIn #-}
+
+-- | Print a non-negative number in the specified positional numeral system.
+nonNegative ∷ (PositionalSystem s, Integral α, Printer p) ⇒ s → α → p
+nonNegative s = go (printDigitIn s $! intToDigitIn s 0)
+  where go p 0 = p
+        go _ m = go mempty q <> printDigitIn s d
+          where (q, r) = quotRem m radix
+                !d     = intToDigitIn s $ fromIntegral r
+        radix = radixIn s
+{-# INLINABLE nonNegative #-}
+{-# SPECIALIZE nonNegative ∷ Printer p ⇒ Decimal → Int → p #-}
+{-# SPECIALIZE nonNegative ∷ Printer p ⇒ Decimal → Int8 → p #-}
+{-# SPECIALIZE nonNegative ∷ Printer p ⇒ Decimal → Int16 → p #-}
+{-# SPECIALIZE nonNegative ∷ Printer p ⇒ Decimal → Int32 → p #-}
+{-# SPECIALIZE nonNegative ∷ Printer p ⇒ Decimal → Int64 → p #-}
+{-# SPECIALIZE nonNegative ∷ Printer p ⇒ Decimal → Word → p #-}
+{-# SPECIALIZE nonNegative ∷ Printer p ⇒ Decimal → Word8 → p #-}
+{-# SPECIALIZE nonNegative ∷ Printer p ⇒ Decimal → Word16 → p #-}
+{-# SPECIALIZE nonNegative ∷ Printer p ⇒ Decimal → Word32 → p #-}
+{-# SPECIALIZE nonNegative ∷ Printer p ⇒ Decimal → Word64 → p #-}
+{-# SPECIALIZE nonNegative ∷ (Integral α, Printer p) ⇒ Binary → α → p #-}
+{-# SPECIALIZE nonNegative ∷ (Integral α, Printer p) ⇒ Octal → α → p #-}
+{-# SPECIALIZE nonNegative ∷ (Integral α, Printer p) ⇒ Decimal → α → p #-}
+{-# SPECIALIZE nonNegative ∷ (Integral α, Printer p) ⇒ LowHex → α → p #-}
+{-# SPECIALIZE nonNegative ∷ (Integral α, Printer p) ⇒ UpHex → α → p #-}
+
+-- | Print a non-negative number in the binary numeral system.
+nnBinary ∷ (Integral α, Printer p) ⇒ α → p
+nnBinary = nonNegative Binary
+{-# INLINE nnBinary #-}
+
+-- | Print a non-negative number in the octal numeral system.
+nnOctal ∷ (Integral α, Printer p) ⇒ α → p
+nnOctal = nonNegative Octal
+{-# INLINE nnOctal #-}
+
+-- | Print a non-negative number in the decimal numeral system.
+nnDecimal ∷ (Integral α, Printer p) ⇒ α → p
+nnDecimal = nonNegative Decimal
+{-# INLINE nnDecimal #-}
+
+-- | Print a non-negative number in the hexadecimal numeral system
 --   using lower case digits.
-unsignedLowHex ∷ (Num α, Bits α, Printer p) ⇒ α → p
-unsignedLowHex = go (char7 '0')
-  where go p 0 = p
-        go _ m = go mempty (shiftR m 4) <> char7 c
-          where !r = (if testBit m 0 then 1 else 0)
-                   + (if testBit m 1 then 2 else 0)
-                   + (if testBit m 2 then 4 else 0)
-                   + (if testBit m 3 then 8 else 0)
-                !c | r < 10    = chr $ ord '0' + r
-                   | otherwise = chr $ ord 'a' + r - 10
-{-# INLINABLE unsignedLowHex #-}
-{-# SPECIALIZE unsignedLowHex ∷ Printer p ⇒ Int → p #-}
-{-# SPECIALIZE unsignedLowHex ∷ Printer p ⇒ Int8 → p #-}
-{-# SPECIALIZE unsignedLowHex ∷ Printer p ⇒ Int16 → p #-}
-{-# SPECIALIZE unsignedLowHex ∷ Printer p ⇒ Int32 → p #-}
-{-# SPECIALIZE unsignedLowHex ∷ Printer p ⇒ Int64 → p #-}
-{-# SPECIALIZE unsignedLowHex ∷ Printer p ⇒ Word → p #-}
-{-# SPECIALIZE unsignedLowHex ∷ Printer p ⇒ Word8 → p #-}
-{-# SPECIALIZE unsignedLowHex ∷ Printer p ⇒ Word16 → p #-}
-{-# SPECIALIZE unsignedLowHex ∷ Printer p ⇒ Word32 → p #-}
-{-# SPECIALIZE unsignedLowHex ∷ Printer p ⇒ Word64 → p #-}
+nnLowHex ∷ (Integral α, Printer p) ⇒ α → p
+nnLowHex = nonNegative LowHex
+{-# INLINE nnLowHex #-}
 
--- | Print an unsigned number in the hexadecimal numeral system
+-- | Print a non-negative number in the hexadecimal numeral system
 --   using upper case digits.
-unsignedUpHex ∷ (Num α, Bits α, Printer p) ⇒ α → p
-unsignedUpHex = go (char7 '0')
-  where go p 0 = p
-        go _ m = go mempty (shiftR m 4) <> char7 c
-          where !r = (if testBit m 0 then 1 else 0)
-                   + (if testBit m 1 then 2 else 0)
-                   + (if testBit m 2 then 4 else 0)
-                   + (if testBit m 3 then 8 else 0)
-                !c | r < 10    = chr $ ord '0' + r
-                   | otherwise = chr $ ord 'A' + r - 10
-{-# INLINABLE unsignedUpHex #-}
-{-# SPECIALIZE unsignedUpHex ∷ Printer p ⇒ Int → p #-}
-{-# SPECIALIZE unsignedUpHex ∷ Printer p ⇒ Int8 → p #-}
-{-# SPECIALIZE unsignedUpHex ∷ Printer p ⇒ Int16 → p #-}
-{-# SPECIALIZE unsignedUpHex ∷ Printer p ⇒ Int32 → p #-}
-{-# SPECIALIZE unsignedUpHex ∷ Printer p ⇒ Int64 → p #-}
-{-# SPECIALIZE unsignedUpHex ∷ Printer p ⇒ Word → p #-}
-{-# SPECIALIZE unsignedUpHex ∷ Printer p ⇒ Word8 → p #-}
-{-# SPECIALIZE unsignedUpHex ∷ Printer p ⇒ Word16 → p #-}
-{-# SPECIALIZE unsignedUpHex ∷ Printer p ⇒ Word32 → p #-}
-{-# SPECIALIZE unsignedUpHex ∷ Printer p ⇒ Word64 → p #-}
+nnUpHex ∷ (Integral α, Printer p) ⇒ α → p
+nnUpHex = nonNegative UpHex
+{-# INLINE nnUpHex #-}
 
--- | Print an unsigned number in the decimal numeral system.
-unsignedDecimal ∷ (Integral α, Printer p) ⇒ α → p
-unsignedDecimal = go (char7 '0')
+-- | Print a non-negative binary number in the specified positional numeral
+--   system.
+nnBits ∷ (BitSystem s, Num α, Bits α, Printer p) ⇒ s → α → p
+nnBits s = go (printDigitIn s $! intToDigitIn s 0)
   where go p 0 = p
-        go _ m = go mempty q <> char7 c
-          where (q, r) = quotRem m 10
-                !c = chr $ ord '0' + fromIntegral r
-{-# INLINABLE unsignedDecimal #-}
-{-# SPECIALIZE unsignedDecimal ∷ Printer p ⇒ Int → p #-}
-{-# SPECIALIZE unsignedDecimal ∷ Printer p ⇒ Int8 → p #-}
-{-# SPECIALIZE unsignedDecimal ∷ Printer p ⇒ Int16 → p #-}
-{-# SPECIALIZE unsignedDecimal ∷ Printer p ⇒ Int32 → p #-}
-{-# SPECIALIZE unsignedDecimal ∷ Printer p ⇒ Int64 → p #-}
-{-# SPECIALIZE unsignedDecimal ∷ Printer p ⇒ Word → p #-}
-{-# SPECIALIZE unsignedDecimal ∷ Printer p ⇒ Word8 → p #-}
-{-# SPECIALIZE unsignedDecimal ∷ Printer p ⇒ Word16 → p #-}
-{-# SPECIALIZE unsignedDecimal ∷ Printer p ⇒ Word32 → p #-}
-{-# SPECIALIZE unsignedDecimal ∷ Printer p ⇒ Word64 → p #-}
+        go _ m = go mempty (shiftR m digitBits) <> printDigitIn s d
+          where !d = intToDigitIn s $ lastDigitIn s m
+        digitBits = digitBitsIn s
+{-# INLINABLE nnBits #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Binary → Int → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Binary → Int8 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Binary → Int16 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Binary → Int32 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Binary → Int64 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Binary → Word → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Binary → Word8 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Binary → Word16 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Binary → Word32 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Binary → Word64 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Octal → Int → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Octal → Int8 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Octal → Int16 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Octal → Int32 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Octal → Int64 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Octal → Word → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Octal → Word8 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Octal → Word16 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Octal → Word32 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Octal → Word64 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Hexadecimal → Int → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Hexadecimal → Int8 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Hexadecimal → Int16 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Hexadecimal → Int32 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Hexadecimal → Int64 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Hexadecimal → Word → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Hexadecimal → Word8 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Hexadecimal → Word16 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Hexadecimal → Word32 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ Hexadecimal → Word64 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ LowHex → Int → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ LowHex → Int8 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ LowHex → Int16 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ LowHex → Int32 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ LowHex → Int64 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ LowHex → Word → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ LowHex → Word8 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ LowHex → Word16 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ LowHex → Word32 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ LowHex → Word64 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ UpHex → Int → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ UpHex → Int8 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ UpHex → Int16 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ UpHex → Int32 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ UpHex → Int64 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ UpHex → Word → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ UpHex → Word8 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ UpHex → Word16 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ UpHex → Word32 → p #-}
+{-# SPECIALIZE nnBits ∷ Printer p ⇒ UpHex → Word64 → p #-}
+{-# SPECIALIZE nnBits ∷ (Num α, Bits α, Printer p) ⇒ Binary → α → p #-}
+{-# SPECIALIZE nnBits ∷ (Num α, Bits α, Printer p) ⇒ Octal → α → p #-}
+{-# SPECIALIZE nnBits ∷ (Num α, Bits α, Printer p) ⇒ Hexadecimal → α → p #-}
+{-# SPECIALIZE nnBits ∷ (Num α, Bits α, Printer p) ⇒ LowHex → α → p #-}
+{-# SPECIALIZE nnBits ∷ (Num α, Bits α, Printer p) ⇒ UpHex → α → p #-}
+
+-- | Print a non-negative binary number in the binary numeral system.
+nnBinaryBits ∷ (Num α, Bits α, Printer p) ⇒ α → p
+nnBinaryBits = nnBits Binary
+{-# INLINE nnBinaryBits #-}
+
+-- | Print a non-negative binary number in the octal numeral system.
+nnOctalBits ∷ (Num α, Bits α, Printer p) ⇒ α → p
+nnOctalBits = nnBits Octal
+{-# INLINE nnOctalBits #-}
+
+-- | Print a non-negative binary number in the hexadecimal numeral system
+--   using lower case digits.
+nnLowHexBits ∷ (Num α, Bits α, Printer p) ⇒ α → p
+nnLowHexBits = nnBits LowHex
+{-# INLINE nnLowHexBits #-}
+
+-- | Print a non-negative binary number in the hexadecimal numeral system
+--   using upper case digits.
+nnUpHexBits ∷ (Num α, Bits α, Printer p) ⇒ α → p
+nnUpHexBits = nnBits UpHex
+{-# INLINE nnUpHexBits #-}
+
+-- | Print a non-positive number in the specified positional numeral system.
+--   For example, @'nonPositive' 'Decimal' (-/123/)@ would print \"123\".
+nonPositive ∷ (PositionalSystem s, Integral α, Printer p) ⇒ s → α → p
+nonPositive s = go (printDigitIn s $! intToDigitIn s 0)
+  where go p 0 = p
+        go _ m = go mempty q <> printDigitIn s d
+          where (q, r) = quotRem m radix
+                !d     = intToDigitIn s $ negate $ fromIntegral r
+        radix = radixIn s
+{-# INLINABLE nonPositive #-}
+{-# SPECIALIZE nonPositive ∷ Printer p ⇒ Decimal → Int → p #-}
+{-# SPECIALIZE nonPositive ∷ Printer p ⇒ Decimal → Int8 → p #-}
+{-# SPECIALIZE nonPositive ∷ Printer p ⇒ Decimal → Int16 → p #-}
+{-# SPECIALIZE nonPositive ∷ Printer p ⇒ Decimal → Int32 → p #-}
+{-# SPECIALIZE nonPositive ∷ Printer p ⇒ Decimal → Int64 → p #-}
+{-# SPECIALIZE nonPositive ∷ Printer p ⇒ Decimal → Word → p #-}
+{-# SPECIALIZE nonPositive ∷ Printer p ⇒ Decimal → Word8 → p #-}
+{-# SPECIALIZE nonPositive ∷ Printer p ⇒ Decimal → Word16 → p #-}
+{-# SPECIALIZE nonPositive ∷ Printer p ⇒ Decimal → Word32 → p #-}
+{-# SPECIALIZE nonPositive ∷ Printer p ⇒ Decimal → Word64 → p #-}
+{-# SPECIALIZE nonPositive ∷ (Integral α, Printer p) ⇒ Binary → α → p #-}
+{-# SPECIALIZE nonPositive ∷ (Integral α, Printer p) ⇒ Octal → α → p #-}
+{-# SPECIALIZE nonPositive ∷ (Integral α, Printer p) ⇒ Decimal → α → p #-}
+{-# SPECIALIZE nonPositive ∷ (Integral α, Printer p) ⇒ LowHex → α → p #-}
+{-# SPECIALIZE nonPositive ∷ (Integral α, Printer p) ⇒ UpHex → α → p #-}
+
+-- | Print a non-positive number in the binary numeral system.
+npBinary ∷ (Integral α, Printer p) ⇒ α → p
+npBinary = nonPositive Binary
+{-# INLINE npBinary #-}
+
+-- | Print a non-positive number in the octal numeral system.
+npOctal ∷ (Integral α, Printer p) ⇒ α → p
+npOctal = nonPositive Octal
+{-# INLINE npOctal #-}
+
+-- | Print a non-positive number in the decimal numeral system.
+npDecimal ∷ (Integral α, Printer p) ⇒ α → p
+npDecimal = nonPositive Decimal
+{-# INLINE npDecimal #-}
+
+-- | Print a non-positive number in the hexadecimal numeral system
+--   using lower case digits.
+npLowHex ∷ (Integral α, Printer p) ⇒ α → p
+npLowHex = nonPositive LowHex
+{-# INLINE npLowHex #-}
+
+-- | Print a non-positive number in the hexadecimal numeral system
+--   using upper case digits.
+npUpHex ∷ (Integral α, Printer p) ⇒ α → p
+npUpHex = nonPositive UpHex
+{-# INLINE npUpHex #-}
+
+-- | Print a non-positive two-compliment binary number in the specified
+--   positional numeral system. For example, @'npBits' 'UpHex' (-/0xABC/)@
+--   would print \"ABC\".
+npBits ∷ (BitSystem s, Ord α, Num α, Bits α, Printer p) ⇒ s → α → p
+npBits s n = case testBit n 0 of
+    True → go mempty (shiftR (negate n) digitBits) <> printDigitIn s d
+      where !d = intToDigitIn s $ radix - lastDigitIn s n
+    False → case n > negate (bit digitBits) of
+        True → printDigitIn s d'
+        False → go mempty m <> printDigitIn s d'
+          where m | d == 0    = negate $ shiftR n digitBits
+                  | otherwise = complement $ shiftR n digitBits
+      where !d  = lastDigitIn s n
+            !d' = intToDigitIn s $ (radix - d) .&. digitMask
+  where go p 0 = p
+        go p m = go p (shiftR m digitBits) <> printDigitIn s d
+          where !d = intToDigitIn s $ lastDigitIn s m
+        radix     = radixIn s
+        digitMask = digitMaskIn s
+        digitBits = digitBitsIn s
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Binary → Int → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Binary → Int8 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Binary → Int16 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Binary → Int32 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Binary → Int64 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Binary → Word → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Binary → Word8 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Binary → Word16 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Binary → Word32 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Binary → Word64 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Octal → Int → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Octal → Int8 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Octal → Int16 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Octal → Int32 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Octal → Int64 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Octal → Word → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Octal → Word8 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Octal → Word16 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Octal → Word32 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Octal → Word64 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Hexadecimal → Int → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Hexadecimal → Int8 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Hexadecimal → Int16 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Hexadecimal → Int32 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Hexadecimal → Int64 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Hexadecimal → Word → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Hexadecimal → Word8 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Hexadecimal → Word16 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Hexadecimal → Word32 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ Hexadecimal → Word64 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ LowHex → Int → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ LowHex → Int8 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ LowHex → Int16 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ LowHex → Int32 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ LowHex → Int64 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ LowHex → Word → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ LowHex → Word8 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ LowHex → Word16 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ LowHex → Word32 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ LowHex → Word64 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ UpHex → Int → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ UpHex → Int8 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ UpHex → Int16 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ UpHex → Int32 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ UpHex → Int64 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ UpHex → Word → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ UpHex → Word8 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ UpHex → Word16 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ UpHex → Word32 → p #-}
+{-# SPECIALIZE npBits ∷ Printer p ⇒ UpHex → Word64 → p #-}
+{-# SPECIALIZE npBits ∷ (Ord α, Num α, Bits α, Printer p) ⇒ Binary → α → p #-}
+{-# SPECIALIZE npBits ∷ (Ord α, Num α, Bits α, Printer p) ⇒ Octal → α → p #-}
+{-# SPECIALIZE npBits ∷ (Ord α, Num α, Bits α, Printer p) ⇒ Hexadecimal → α → p #-}
+{-# SPECIALIZE npBits ∷ (Ord α, Num α, Bits α, Printer p) ⇒ LowHex → α → p #-}
+{-# SPECIALIZE npBits ∷ (Ord α, Num α, Bits α, Printer p) ⇒ UpHex → α → p #-}
+
+-- | Print a non-positive binary number in the binary numeral system.
+npBinaryBits ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
+npBinaryBits = npBits Binary
+{-# INLINE npBinaryBits #-}
+
+-- | Print a non-positive binary number in the octal numeral system.
+npOctalBits ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
+npOctalBits = npBits Octal
+{-# INLINE npOctalBits #-}
+
+-- | Print a non-positive binary number in the hexadecimal numeral system
+--   using lower case digits.
+npLowHexBits ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
+npLowHexBits = npBits LowHex
+{-# INLINE npLowHexBits #-}
+
+-- | Print a non-positive binary number in the hexadecimal numeral system
+--   using upper case digits.
+npUpHexBits ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
+npUpHexBits = npBits UpHex
+{-# INLINE npUpHexBits #-}
+
+-- | Print a number in the specified positional numeral system.
+number' ∷ (PositionalSystem s, Ord α, Integral α, Printer p)
+        ⇒ s
+        → p -- ^ Prefix for negative values
+        → p -- ^ Prefix for the zero
+        → p -- ^ Prefix for positive values
+        → α → p
+number' s neg z pos n = case compare n 0 of
+    LT → go neg q <> printDigitIn s d
+      where (q, r) = quotRem n (negate radix)
+            !d     = intToDigitIn s $ negate $ fromIntegral r
+    EQ → z <> (printDigitIn s $! intToDigitIn s 0)
+    GT → go pos q <> printDigitIn s d
+      where (q, r) = quotRem n radix
+            !d     = intToDigitIn s $ fromIntegral r
+  where go p 0 = p
+        go p m = go p q <> printDigitIn s d
+          where (q, r) = quotRem m radix
+                !d     = intToDigitIn s $ fromIntegral r
+        radix = radixIn s
+{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Int → p #-}
+{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Int8 → p #-}
+{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Int16 → p #-}
+{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Int32 → p #-}
+{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Int64 → p #-}
+{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word → p #-}
+{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word8 → p #-}
+{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word16 → p #-}
+{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word32 → p #-}
+{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word64 → p #-}
+{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Binary → p → p → p → α → p #-}
+{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Decimal → p → p → p → α → p #-}
+{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Octal → p → p → p → α → p #-}
+{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Hexadecimal → p → p → p → α → p #-}
+{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ LowHex → p → p → p → α → p #-}
+{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ UpHex → p → p → p → α → p #-}
+
+-- | Print a number in the specified positional numeral system. Negative
+--   values are prefixed with a minus sign.
+number ∷ (PositionalSystem s, Ord α, Integral α, Printer p) ⇒ s → α → p
+number s = number' s (char7 '-') mempty mempty
+{-# INLINE number #-}
 
 -- | Print a number in the binary numeral system.
-binary' ∷ (Ord α, Num α, Bits α, Printer p)
+binary' ∷ (Ord α, Integral α, Printer p)
         ⇒ p -- ^ Prefix for negative values
         → p -- ^ Prefix for the zero
         → p -- ^ Prefix for positive values
         → α → p
-binary' neg z pos n = case compare n 0 of
-    LT → case testBit n 0 of
-           True → go neg (shiftR (negate n) 1) <> char7 '1'
-           False → go neg (negate $ shiftR n 1) <> char7 '0'
-    EQ → z <> char7 '0'
-    GT → go pos (shiftR n 1) <> char7 c
-      where !c = if testBit n 0 then '1' else '0'
-  where go p 0 = p
-        go p m = go p (shiftR m 1) <> char7 c
-          where !c = if testBit m 0 then '1' else '0'
-{-# INLINABLE binary' #-}
-{-# SPECIALIZE binary' ∷ Printer p ⇒ p → p → p → Int → p #-}
-{-# SPECIALIZE binary' ∷ Printer p ⇒ p → p → p → Int8 → p #-}
-{-# SPECIALIZE binary' ∷ Printer p ⇒ p → p → p → Int16 → p #-}
-{-# SPECIALIZE binary' ∷ Printer p ⇒ p → p → p → Int32 → p #-}
-{-# SPECIALIZE binary' ∷ Printer p ⇒ p → p → p → Int64 → p #-}
-{-# SPECIALIZE binary' ∷ Printer p ⇒ p → p → p → Word → p #-}
-{-# SPECIALIZE binary' ∷ Printer p ⇒ p → p → p → Word8 → p #-}
-{-# SPECIALIZE binary' ∷ Printer p ⇒ p → p → p → Word16 → p #-}
-{-# SPECIALIZE binary' ∷ Printer p ⇒ p → p → p → Word32 → p #-}
-{-# SPECIALIZE binary' ∷ Printer p ⇒ p → p → p → Word64 → p #-}
+binary' = number' Binary
+{-# INLINE binary' #-}
 
 -- | Print a number in the binary numeral system. Negative values
 --   are prefixed with a minus sign.
-binary ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
-binary = binary' (char7 '-') mempty mempty
+binary ∷ (Ord α, Integral α, Printer p) ⇒ α → p
+binary = number Binary
 {-# INLINE binary #-}
 
 -- | Print a number in the octal numeral system.
-octal' ∷ (Ord α, Num α, Bits α, Printer p)
+octal' ∷ (Ord α, Integral α, Printer p)
        ⇒ p -- ^ Prefix for negative values
        → p -- ^ Prefix for the zero
        → p -- ^ Prefix for positive values
        → α → p
-octal' neg z pos n = case compare n 0 of
-    LT → case testBit n 0 of
-           True → go neg (shiftR (negate n) 3) <> char7 c
-             where !r = 7
-                      - (if testBit n 1 then 2 else 0)
-                      - (if testBit n 2 then 4 else 0)
-                   !c = chr $ ord '0' + r
-           False → case n > negate (bit 3) of
-               True → neg <> char7 c 
-               False → go neg m <> char7 c
-                 where m | v == 0    = negate $ shiftR n 3
-                         | otherwise = complement $ shiftR n 3
-             where !v = (if testBit n 1 then 2 else 0)
-                      + (if testBit n 2 then 4 else 0)
-                   !r = (8 - v) .&. 7
-                   !c = chr $ ord '0' + r
-    EQ → z <> char7 '0'
-    GT → go pos (shiftR n 3) <> char7 c
-      where !r = (if testBit n 0 then 1 else 0)
-               + (if testBit n 1 then 2 else 0)
-               + (if testBit n 2 then 4 else 0)
-            !c = chr $ ord '0' + r
-  where go p 0 = p
-        go p m = go p (shiftR m 3) <> char7 c
-          where !r = (if testBit m 0 then 1 else 0)
-                   + (if testBit m 1 then 2 else 0)
-                   + (if testBit m 2 then 4 else 0)
-                !c = chr $ ord '0' + r
-{-# SPECIALIZE octal' ∷ Printer p ⇒ p → p → p → Int → p #-}
-{-# SPECIALIZE octal' ∷ Printer p ⇒ p → p → p → Int8 → p #-}
-{-# SPECIALIZE octal' ∷ Printer p ⇒ p → p → p → Int16 → p #-}
-{-# SPECIALIZE octal' ∷ Printer p ⇒ p → p → p → Int32 → p #-}
-{-# SPECIALIZE octal' ∷ Printer p ⇒ p → p → p → Int64 → p #-}
-{-# SPECIALIZE octal' ∷ Printer p ⇒ p → p → p → Word → p #-}
-{-# SPECIALIZE octal' ∷ Printer p ⇒ p → p → p → Word8 → p #-}
-{-# SPECIALIZE octal' ∷ Printer p ⇒ p → p → p → Word16 → p #-}
-{-# SPECIALIZE octal' ∷ Printer p ⇒ p → p → p → Word32 → p #-}
-{-# SPECIALIZE octal' ∷ Printer p ⇒ p → p → p → Word64 → p #-}
+octal' = number' Octal
+{-# INLINE octal' #-}
 
 -- | Print a number in the octal numeral system. Negative values
 --   are prefixed with a minus sign.
-octal ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
-octal = octal' (char7 '-') mempty mempty
+octal ∷ (Ord α, Integral α, Printer p) ⇒ α → p
+octal = number Octal
 {-# INLINE octal #-}
 
-hex' ∷ (Ord α, Num α, Bits α, Printer p) ⇒ Int → p → p → p → α → p
-hex' a neg z pos n = case compare n 0 of
-    LT → case testBit n 0 of
-      True → go neg (shiftR (negate n) 4) <> char7 c
-        where !r = 15
-                 - (if testBit n 1 then 2 else 0)
-                 - (if testBit n 2 then 4 else 0)
-                 - (if testBit n 3 then 8 else 0)
-              !c | r < 10    = chr $ ord '0' + r
-                 | otherwise = chr $ a + (r - 10) 
-      False → case n > negate (bit 4) of
-          True → neg <> char7 c 
-          False → go neg m <> char7 c
-            where m | v == 0    = negate $ shiftR n 4
-                    | otherwise = complement $ shiftR n 4
-        where !v = (if testBit n 1 then 2 else 0)
-                 + (if testBit n 2 then 4 else 0)
-                 + (if testBit n 3 then 8 else 0)
-              !r = (16 - v) .&. 15
-              !c | r < 10    = chr $ ord '0' + r
-                 | otherwise = chr $ a + (r - 10)
-    EQ → z <> char7 '0'
-    GT → go pos (shiftR n 4) <> char7 c
-      where !r = (if testBit n 0 then 1 else 0)
-               + (if testBit n 1 then 2 else 0)
-               + (if testBit n 2 then 4 else 0)
-               + (if testBit n 3 then 8 else 0)
-            !c | r < 10    = chr $ ord '0' + r
-               | otherwise = chr $ a + (r - 10)
-  where go p 0 = p
-        go p m = go p (shiftR m 4) <> char7 c
-          where !r = (if testBit m 0 then 1 else 0)
-                   + (if testBit m 1 then 2 else 0)
-                   + (if testBit m 2 then 4 else 0)
-                   + (if testBit m 3 then 8 else 0)
-                !c | r < 10    = chr $ ord '0' + r
-                   | otherwise = chr $ a + (r - 10)
-{-# SPECIALIZE hex' ∷ Printer p ⇒ Int → p → p → p → Int → p #-}
-{-# SPECIALIZE hex' ∷ Printer p ⇒ Int → p → p → p → Int8 → p #-}
-{-# SPECIALIZE hex' ∷ Printer p ⇒ Int → p → p → p → Int16 → p #-}
-{-# SPECIALIZE hex' ∷ Printer p ⇒ Int → p → p → p → Int32 → p #-}
-{-# SPECIALIZE hex' ∷ Printer p ⇒ Int → p → p → p → Int64 → p #-}
-{-# SPECIALIZE hex' ∷ Printer p ⇒ Int → p → p → p → Word → p #-}
-{-# SPECIALIZE hex' ∷ Printer p ⇒ Int → p → p → p → Word8 → p #-}
-{-# SPECIALIZE hex' ∷ Printer p ⇒ Int → p → p → p → Word16 → p #-}
-{-# SPECIALIZE hex' ∷ Printer p ⇒ Int → p → p → p → Word32 → p #-}
-{-# SPECIALIZE hex' ∷ Printer p ⇒ Int → p → p → p → Word64 → p #-}
+-- | Print a number in the decimal numeral system.
+decimal' ∷ (Ord α, Integral α, Printer p)
+         ⇒ p -- ^ Prefix for negative values
+         → p -- ^ Prefix for the zero
+         → p -- ^ Prefix for positive values
+         → α → p
+decimal' = number' Decimal
+{-# INLINE decimal' #-}
+
+-- | Print a number in the decimal numeral system. Negative values
+--   are prefixed with a minus sign.
+decimal ∷ (Ord α, Integral α, Printer p) ⇒ α → p
+decimal = number Decimal
+{-# INLINE decimal #-}
 
 -- | Print a number in the hexadecimal numeral system using lower case
 --   digits.
-lowHex' ∷ (Ord α, Num α, Bits α, Printer p)
+lowHex' ∷ (Ord α, Integral α, Printer p)
         ⇒ p -- ^ Prefix for negative values
         → p -- ^ Prefix for the zero
-        → p -- ^ Prefix for postive values
+        → p -- ^ Prefix for positive values
         → α → p
-lowHex' = hex' (ord 'a')
+lowHex' = number' LowHex
 {-# INLINE lowHex' #-}
 
 -- | Print a number in the hexadecimal numeral system using lower case
 --   digits. Negative values are prefixed with a minus sign.
-lowHex ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
-lowHex = lowHex' (char7 '-') mempty mempty
+lowHex ∷ (Ord α, Integral α, Printer p) ⇒ α → p
+lowHex = number LowHex
 {-# INLINE lowHex #-}
 
 -- | Print a number in the hexadecimal numeral system using upper case
 --   digits.
-upHex' ∷ (Ord α, Num α, Bits α, Printer p)
-        ⇒ p -- ^ Prefix for negative values
-        → p -- ^ Prefix for the zero
-        → p -- ^ Prefix for postive values
-        → α → p
-upHex' = hex' (ord 'A')
+upHex' ∷ (Ord α, Integral α, Printer p)
+       ⇒ p -- ^ Prefix for negative values
+       → p -- ^ Prefix for the zero
+       → p -- ^ Prefix for positive values
+       → α → p
+upHex' = number' UpHex
 {-# INLINE upHex' #-}
 
 -- | Print a number in the hexadecimal numeral system using upper case
 --   digits. Negative values are prefixed with a minus sign.
-upHex ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
-upHex = upHex' (char7 '-') mempty mempty
+upHex ∷ (Ord α, Integral α, Printer p) ⇒ α → p
+upHex = number UpHex
 {-# INLINE upHex #-}
 
--- | Print a number in the decimal numeral system.
-decimal' ∷ (Integral α, Printer p)
-        ⇒ p -- ^ Prefix for negative values
-        → p -- ^ Prefix for the zero
-        → p -- ^ Prefix for postive values
-        → α → p
-decimal' neg z pos n = case compare n 0 of
-    LT → go neg q <> char7 c
-      where (q, r) = quotRem n (-10)
-            !c     = chr $ ord '0' - fromIntegral r
-    EQ → z <> char7 '0'
-    GT → go pos q <> char7 c
-      where (q, r) = quotRem n 10
-            !c = chr $ ord '0' + fromIntegral r
+-- | Print a binary number in the specified positional numeral system.
+bits' ∷ (BitSystem s, Ord α, Num α, Bits α, Printer p)
+      ⇒ s
+      → p -- ^ Prefix for negative values
+      → p -- ^ Prefix for the zero
+      → p -- ^ Prefix for positive values
+      → α → p
+bits' s neg z pos n = case compare n 0 of
+    LT → case testBit n 0 of
+           True → go neg (shiftR (negate n) digitBits) <> printDigitIn s d
+             where !d = intToDigitIn s $ radix - lastDigitIn s n
+           False → case n > negate (bit digitBits) of
+               True → neg <> printDigitIn s d'
+               False → go neg m <> printDigitIn s d'
+                 where m | d == 0    = negate $ shiftR n digitBits
+                         | otherwise = complement $ shiftR n digitBits
+             where !d  = lastDigitIn s n
+                   !d' = intToDigitIn s $ (radix - d) .&. digitMask
+    EQ → z <> (printDigitIn s $! intToDigitIn s 0)
+    GT → go pos (shiftR n digitBits) <> printDigitIn s d
+      where !d = intToDigitIn s $ lastDigitIn s n
   where go p 0 = p
-        go p m = go p q <> char7 c
-          where (q, r) = quotRem m 10
-                !c = chr $ ord '0' + fromIntegral r
-{-# SPECIALIZE decimal' ∷ Printer p ⇒ p → p → p → Int → p #-}
-{-# SPECIALIZE decimal' ∷ Printer p ⇒ p → p → p → Int8 → p #-}
-{-# SPECIALIZE decimal' ∷ Printer p ⇒ p → p → p → Int16 → p #-}
-{-# SPECIALIZE decimal' ∷ Printer p ⇒ p → p → p → Int32 → p #-}
-{-# SPECIALIZE decimal' ∷ Printer p ⇒ p → p → p → Int64 → p #-}
-{-# SPECIALIZE decimal' ∷ Printer p ⇒ p → p → p → Word → p #-}
-{-# SPECIALIZE decimal' ∷ Printer p ⇒ p → p → p → Word8 → p #-}
-{-# SPECIALIZE decimal' ∷ Printer p ⇒ p → p → p → Word16 → p #-}
-{-# SPECIALIZE decimal' ∷ Printer p ⇒ p → p → p → Word32 → p #-}
-{-# SPECIALIZE decimal' ∷ Printer p ⇒ p → p → p → Word64 → p #-}
+        go p m = go p (shiftR m digitBits) <> printDigitIn s d
+          where !d = intToDigitIn s $ lastDigitIn s m
+        radix     = radixIn s
+        digitMask = digitMaskIn s
+        digitBits = digitBitsIn s
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Binary → p → p → p → Int → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Binary → p → p → p → Int8 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Binary → p → p → p → Int16 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Binary → p → p → p → Int32 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Binary → p → p → p → Int64 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Binary → p → p → p → Word → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Binary → p → p → p → Word8 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Binary → p → p → p → Word16 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Binary → p → p → p → Word32 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Binary → p → p → p → Word64 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Octal → p → p → p → Int → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Octal → p → p → p → Int8 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Octal → p → p → p → Int16 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Octal → p → p → p → Int32 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Octal → p → p → p → Int64 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Octal → p → p → p → Word → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Octal → p → p → p → Word8 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Octal → p → p → p → Word16 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Octal → p → p → p → Word32 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Octal → p → p → p → Word64 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Hexadecimal → p → p → p → Int → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Hexadecimal → p → p → p → Int8 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Hexadecimal → p → p → p → Int16 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Hexadecimal → p → p → p → Int32 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Hexadecimal → p → p → p → Int64 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Hexadecimal → p → p → p → Word → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Hexadecimal → p → p → p → Word8 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Hexadecimal → p → p → p → Word16 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Hexadecimal → p → p → p → Word32 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ Hexadecimal → p → p → p → Word64 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ LowHex → p → p → p → Int → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ LowHex → p → p → p → Int8 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ LowHex → p → p → p → Int16 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ LowHex → p → p → p → Int32 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ LowHex → p → p → p → Int64 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ LowHex → p → p → p → Word → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ LowHex → p → p → p → Word8 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ LowHex → p → p → p → Word16 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ LowHex → p → p → p → Word32 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ LowHex → p → p → p → Word64 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ UpHex → p → p → p → Int → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ UpHex → p → p → p → Int8 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ UpHex → p → p → p → Int16 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ UpHex → p → p → p → Int32 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ UpHex → p → p → p → Int64 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ UpHex → p → p → p → Word → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ UpHex → p → p → p → Word8 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ UpHex → p → p → p → Word16 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ UpHex → p → p → p → Word32 → p #-}
+{-# SPECIALIZE bits' ∷ Printer p ⇒ UpHex → p → p → p → Word64 → p #-}
+{-# SPECIALIZE bits' ∷ (Ord α, Num α, Bits α, Printer p) ⇒ Binary → p → p → p → α → p #-}
+{-# SPECIALIZE bits' ∷ (Ord α, Num α, Bits α, Printer p) ⇒ Octal → p → p → p → α → p #-}
+{-# SPECIALIZE bits' ∷ (Ord α, Num α, Bits α, Printer p) ⇒ Hexadecimal → p → p → p → α → p #-}
+{-# SPECIALIZE bits' ∷ (Ord α, Num α, Bits α, Printer p) ⇒ LowHex → p → p → p → α → p #-}
+{-# SPECIALIZE bits' ∷ (Ord α, Num α, Bits α, Printer p) ⇒ UpHex → p → p → p → α → p #-}
 
--- | Print a number in the decimal numeral system. Negative values
+-- | Print a binary number in the specified positional numeral system.
+--   Negative values are prefixed with a minus sign.
+bits ∷ (BitSystem s, Ord α, Num α, Bits α, Printer p) ⇒ s → α → p
+bits s = bits' s (char7 '-') mempty mempty
+{-# INLINE bits #-}
+
+-- | Print a binary number in the binary numeral system.
+binaryBits' ∷ (Ord α, Num α, Bits α, Printer p)
+            ⇒ p -- ^ Prefix for negative values
+            → p -- ^ Prefix for the zero
+            → p -- ^ Prefix for positive values
+            → α → p
+binaryBits' = bits' Binary
+{-# INLINE binaryBits' #-}
+
+-- | Print a binary number in the binary numeral system. Negative values
 --   are prefixed with a minus sign.
-decimal ∷ (Integral α, Printer p) ⇒ α → p
-decimal = decimal' (char7 '-') mempty mempty
-{-# INLINE decimal #-}
+binaryBits ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
+binaryBits = bits Binary
+{-# INLINE binaryBits #-}
+
+-- | Print a binary number in the octal numeral system.
+octalBits' ∷ (Ord α, Num α, Bits α, Printer p)
+           ⇒ p -- ^ Prefix for negative values
+           → p -- ^ Prefix for the zero
+           → p -- ^ Prefix for positive values
+           → α → p
+octalBits' = bits' Octal
+{-# INLINE octalBits' #-}
+
+-- | Print a binary number in the octal numeral system. Negative values
+--   are prefixed with a minus sign.
+octalBits ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
+octalBits = bits Octal
+{-# INLINE octalBits #-}
+
+-- | Print a binary number in the hexadecimal numeral system using lower
+--   case digits.
+lowHexBits' ∷ (Ord α, Num α, Bits α, Printer p)
+            ⇒ p -- ^ Prefix for negative values
+            → p -- ^ Prefix for the zero
+            → p -- ^ Prefix for positive values
+            → α → p
+lowHexBits' = bits' LowHex
+{-# INLINE lowHexBits' #-}
+
+-- | Print a binary number in the hexadecimal numeral system using lower
+--   case digits. Negative values are prefixed with a minus sign.
+lowHexBits ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
+lowHexBits = bits LowHex
+{-# INLINE lowHexBits #-}
+
+-- | Print a binary number in the hexadecimal numeral system using upper
+--   case digits.
+upHexBits' ∷ (Ord α, Num α, Bits α, Printer p)
+           ⇒ p -- ^ Prefix for negative values
+           → p -- ^ Prefix for the zero
+           → p -- ^ Prefix for positive values
+           → α → p
+upHexBits' = bits' UpHex
+{-# INLINE upHexBits' #-}
+
+-- | Print a binary number in the hexadecimal numeral system using upper
+--   case digits. Negative values are prefixed with a minus sign.
+upHexBits ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
+upHexBits = bits UpHex
+{-# INLINE upHexBits #-}
 
 infixr 5 <->
 
