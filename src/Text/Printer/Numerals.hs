@@ -2,6 +2,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE BangPatterns #-}
 
+-- | Print numbers in common positional numeral systems. 
 module Text.Printer.Numerals
   (
   -- * Positional systems.
@@ -484,7 +485,7 @@ npBits ∷ (BitSystem s, Ord α, Num α, Bits α, Printer p) ⇒ s → α → p
 npBits s n = case testBit n 0 of
     True → go mempty (shiftR (negate n) digitBits) <> printDigitIn s d
       where !d = intToDigitIn s $ radix - lastDigitIn s n
-    False → case n > negate (bit digitBits) of
+    False → case n > negRadix of
         True → printDigitIn s d'
         False → go mempty m <> printDigitIn s d'
           where m | d == 0    = negate $ shiftR n digitBits
@@ -497,6 +498,7 @@ npBits s n = case testBit n 0 of
         radix     = radixIn s
         digitMask = digitMaskIn s
         digitBits = digitBitsIn s
+        negRadix  = complement $ digitMaskIn s
 {-# SPECIALIZE npBits ∷ Printer p ⇒ Binary → Int → p #-}
 {-# SPECIALIZE npBits ∷ Printer p ⇒ Binary → Int8 → p #-}
 {-# SPECIALIZE npBits ∷ Printer p ⇒ Binary → Int16 → p #-}
@@ -706,7 +708,7 @@ bits' s neg z pos n = case compare n 0 of
     LT → case testBit n 0 of
            True → go neg (shiftR (negate n) digitBits) <> printDigitIn s d
              where !d = intToDigitIn s $ radix - lastDigitIn s n
-           False → case n > negate (bit digitBits) of
+           False → case n > negRadix of
                True → neg <> printDigitIn s d'
                False → go neg m <> printDigitIn s d'
                  where m | d == 0    = negate $ shiftR n digitBits
@@ -722,6 +724,7 @@ bits' s neg z pos n = case compare n 0 of
         radix     = radixIn s
         digitMask = digitMaskIn s
         digitBits = digitBitsIn s
+        negRadix  = complement $ digitMaskIn s
 {-# SPECIALIZE bits' ∷ Printer p ⇒ Binary → p → p → p → Int → p #-}
 {-# SPECIALIZE bits' ∷ Printer p ⇒ Binary → p → p → p → Int8 → p #-}
 {-# SPECIALIZE bits' ∷ Printer p ⇒ Binary → p → p → p → Int16 → p #-}
