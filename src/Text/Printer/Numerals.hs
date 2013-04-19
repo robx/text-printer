@@ -228,15 +228,15 @@ instance PositionalSystem LowHex where
   {-# INLINE systemName #-}
   radixIn _ = 16
   {-# INLINE radixIn #-}
-  isDigitIn _ = A.isUpHexDigit
+  isDigitIn _ = A.isLowHexDigit
   {-# INLINE isDigitIn #-}
-  isNzDigitIn _ = A.isNzUpHexDigit
+  isNzDigitIn _ = A.isNzLowHexDigit
   {-# INLINE isNzDigitIn #-}
-  fromDigitIn _ = A.fromUpHexDigit
+  fromDigitIn _ = A.fromLowHexDigit
   {-# INLINE fromDigitIn #-}
-  fromNzDigitIn _ = A.fromNzUpHexDigit
+  fromNzDigitIn _ = A.fromNzLowHexDigit
   {-# INLINE fromNzDigitIn #-}
-  unsafeFromDigitIn _ = A.unsafeFromUpHexDigit
+  unsafeFromDigitIn _ = A.unsafeFromLowHexDigit
   {-# INLINE unsafeFromDigitIn #-}
   intToDigitIn _ i | i < 10    = chr $! ord '0' + i
                    | otherwise = chr $! ord 'a' + (i - 10) 
