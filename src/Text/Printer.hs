@@ -51,6 +51,7 @@ module Text.Printer
 import Prelude hiding (foldr, foldr1, print, lines)
 import Data.Typeable (Typeable)
 import Data.String (IsString(..))
+import qualified Data.Semigroup as S
 import Data.Monoid (Monoid(..), (<>))
 import Data.Foldable (Foldable(..), toList)
 import Data.Traversable (Traversable, mapAccumL, mapAccumR)
@@ -125,6 +126,10 @@ instance IsString StringBuilder where
   fromString s = StringBuilder (s ++)
   {-# INLINE fromString #-}
 
+instance S.Semigroup StringBuilder where
+  (<>) = mappend
+  {-# INLINE (<>) #-}
+
 instance Printer StringBuilder where
   char c = StringBuilder (c :)
   {-# INLINE char #-}
@@ -158,6 +163,10 @@ instance IsString AsciiBuilder where
   fromString = AsciiBuilder . BB.string7
   {-# INLINE fromString #-}
 
+instance S.Semigroup AsciiBuilder where
+  (<>) = mappend
+  {-# INLINE (<>) #-}
+
 instance Printer AsciiBuilder where
   char = AsciiBuilder . BB.char7
   {-# INLINE char #-}
@@ -185,6 +194,10 @@ newtype Utf8Builder = Utf8Builder { utf8Builder ∷ BB.Builder }
 instance IsString Utf8Builder where
   fromString = Utf8Builder . BB.stringUtf8
   {-# INLINE fromString #-}
+
+instance S.Semigroup Utf8Builder where
+  (<>) = mappend
+  {-# INLINE (<>) #-}
 
 instance Printer Utf8Builder where
   char = Utf8Builder . BB.charUtf8

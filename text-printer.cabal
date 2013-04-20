@@ -30,7 +30,8 @@ Library
     bytestring >= 0.10,
     text,
     pretty,
-    text-latin1 >= 0.2
+    text-latin1 >= 0.2,
+    semigroups >= 0.8
   Hs-Source-Dirs: src
   GHC-Options: -Wall
   Exposed-Modules:
