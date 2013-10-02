@@ -7,9 +7,11 @@ import Test.QuickCheck ((==>))
 
 import Data.Word (Word)
 import Data.Char (intToDigit)
+import Data.Ratio (numerator, denominator)
 import Numeric (showIntAtBase)
 import Text.Printf (printf)
-import Text.Printer.Numerals
+import Text.Printer.Integral
+import Text.Printer.Fractional
 
 main = defaultMain
   [ testProperty "nnBinary" $ \w →
@@ -105,6 +107,13 @@ main = defaultMain
       else if i < 0
            then upHexBits i == (printf "-%X" (negate $ toInteger i) ∷ String)
            else upHexBits i == (printf "%X" i ∷ String)
+  , testProperty "fraction" $ \r →
+      if r == (0 ∷ Rational)
+      then fraction r == "0"
+      else let n = numerator r
+               d = denominator r in
+             fraction r == if d == 1 then show n
+                                     else show n ++ "/" ++ show d
   ]
 
 showBinary i = showIntAtBase 2 intToDigit i ""

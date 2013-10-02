@@ -36,7 +36,8 @@ Library
   GHC-Options: -Wall
   Exposed-Modules:
     Text.Printer
-    Text.Printer.Numerals
+    Text.Printer.Integral
+    Text.Printer.Fractional
 
 Test-Suite tests
   Default-Language: Haskell2010

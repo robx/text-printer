@@ -2,10 +2,10 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE BangPatterns #-}
 
--- | Print numbers in common positional numeral systems. 
-module Text.Printer.Numerals
+-- | Print integral numbers in common positional numeral systems. 
+module Text.Printer.Integral
   (
-  -- * Positional systems.
+  -- * Positional systems
     PositionalSystem(..)
   , BitSystem(..)
   , Binary(..)
