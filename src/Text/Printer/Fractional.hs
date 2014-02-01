@@ -49,13 +49,13 @@ isRequired Required = True
 fraction' ∷ (PositionalSystem s, Real α, Printer p)
           ⇒ s
           → p -- ^ Prefix for negative values
-          → p -- ^ Prefix for the zero
+          → p -- ^ Zero printer
           → p -- ^ Prefix for positive values
           → p -- ^ Numerator/denominator separator
           → Optional -- ^ Whether to print invisible denominators
           → α → p
 fraction' s neg z pos sep i a
-    | n == 0    = z <> (printDigitIn s $! intToDigitIn s 0)
+    | n == 0    = z
     | d == 1    = case i of
                     Optional → number' s neg z pos n
                     Required →  number' s neg z pos n
@@ -72,4 +72,5 @@ fraction' s neg z pos sep i a
 --   decimal numeral system and separated by a slash. Negative values
 --   are prefixed with a minus sign. Invisible denominators are omitted.
 fraction ∷ (Real α, Printer p) ⇒ α → p
-fraction = fraction' Decimal (char7 '-') mempty mempty (char7 '/') Optional
+fraction = fraction' Decimal (char7 '-') (char7 '0')
+                     mempty (char7 '/') Optional

@@ -95,6 +95,9 @@ class PositionalSystem s where
   printDigitIn ∷ Printer p ⇒ s → Char → p
   printDigitIn _ = char7
   {-# INLINE printDigitIn #-}
+  printZeroIn ∷ Printer p ⇒ s → p
+  printZeroIn s = printDigitIn s $! intToDigitIn s 0
+  {-# INLINE printZeroIn #-}
 
 -- | Positonal numeral system with a power of two radix.
 class PositionalSystem s ⇒ BitSystem s where
@@ -126,6 +129,8 @@ instance PositionalSystem Binary where
   {-# INLINE unsafeFromDigitIn #-}
   intToDigitIn _ i = chr $! ord '0' + i
   {-# INLINE intToDigitIn #-}
+  printZeroIn _ = char7 '0'
+  {-# INLINE printZeroIn #-}
 
 instance BitSystem Binary where
   digitBitsIn _ = 1
@@ -155,6 +160,8 @@ instance PositionalSystem Octal where
   {-# INLINE unsafeFromDigitIn #-}
   intToDigitIn _ i = chr $! ord '0' + i
   {-# INLINE intToDigitIn #-}
+  printZeroIn _ = char7 '0'
+  {-# INLINE printZeroIn #-}
 
 instance BitSystem Octal where
   digitBitsIn _ = 3
@@ -186,6 +193,8 @@ instance PositionalSystem Decimal where
   {-# INLINE unsafeFromDigitIn #-}
   intToDigitIn _ i = chr $! ord '0' + i
   {-# INLINE intToDigitIn #-}
+  printZeroIn _ = char7 '0'
+  {-# INLINE printZeroIn #-}
 
 -- | The hexadecimal numeral system.
 data Hexadecimal = Hexadecimal
@@ -208,6 +217,8 @@ instance PositionalSystem Hexadecimal where
   intToDigitIn _ i | i < 10    = chr $! ord '0' + i
                    | otherwise = chr $! ord 'A' + (i - 10) 
   {-# INLINE intToDigitIn #-}
+  printZeroIn _ = char7 '0'
+  {-# INLINE printZeroIn #-}
 
 instance BitSystem Hexadecimal where
   digitBitsIn _ = 4
@@ -241,6 +252,8 @@ instance PositionalSystem LowHex where
   intToDigitIn _ i | i < 10    = chr $! ord '0' + i
                    | otherwise = chr $! ord 'a' + (i - 10) 
   {-# INLINE intToDigitIn #-}
+  printZeroIn _ = char7 '0'
+  {-# INLINE printZeroIn #-}
 
 instance BitSystem LowHex where
   digitBitsIn _ = 4
@@ -274,6 +287,8 @@ instance PositionalSystem UpHex where
   intToDigitIn _ i | i < 10    = chr $! ord '0' + i
                    | otherwise = chr $! ord 'A' + (i - 10) 
   {-# INLINE intToDigitIn #-}
+  printZeroIn _ = char7 '0'
+  {-# INLINE printZeroIn #-}
 
 instance BitSystem UpHex where
   digitBitsIn _ = 4
@@ -581,14 +596,14 @@ npUpHexBits = npBits UpHex
 number' ∷ (PositionalSystem s, Ord α, Integral α, Printer p)
         ⇒ s
         → p -- ^ Prefix for negative values
-        → p -- ^ Prefix for the zero
+        → p -- ^ Zero printer
         → p -- ^ Prefix for positive values
         → α → p
 number' s neg z pos n = case compare n 0 of
     LT → go neg q <> printDigitIn s d
       where (q, r) = quotRem n (negate radix)
             !d     = intToDigitIn s $ negate $ fromIntegral r
-    EQ → z <> (printDigitIn s $! intToDigitIn s 0)
+    EQ → z
     GT → go pos q <> printDigitIn s d
       where (q, r) = quotRem n radix
             !d     = intToDigitIn s $ fromIntegral r
@@ -617,13 +632,13 @@ number' s neg z pos n = case compare n 0 of
 -- | Print a number in the specified positional numeral system. Negative
 --   values are prefixed with a minus sign.
 number ∷ (PositionalSystem s, Ord α, Integral α, Printer p) ⇒ s → α → p
-number s = number' s (char7 '-') mempty mempty
+number s = number' s (char7 '-') (printZeroIn s) mempty
 {-# INLINE number #-}
 
 -- | Print a number in the binary numeral system.
 binary' ∷ (Ord α, Integral α, Printer p)
         ⇒ p -- ^ Prefix for negative values
-        → p -- ^ Prefix for the zero
+        → p -- ^ Zero printer
         → p -- ^ Prefix for positive values
         → α → p
 binary' = number' Binary
@@ -638,7 +653,7 @@ binary = number Binary
 -- | Print a number in the octal numeral system.
 octal' ∷ (Ord α, Integral α, Printer p)
        ⇒ p -- ^ Prefix for negative values
-       → p -- ^ Prefix for the zero
+       → p -- ^ Zero printer
        → p -- ^ Prefix for positive values
        → α → p
 octal' = number' Octal
@@ -653,7 +668,7 @@ octal = number Octal
 -- | Print a number in the decimal numeral system.
 decimal' ∷ (Ord α, Integral α, Printer p)
          ⇒ p -- ^ Prefix for negative values
-         → p -- ^ Prefix for the zero
+         → p -- ^ Zero printer
          → p -- ^ Prefix for positive values
          → α → p
 decimal' = number' Decimal
@@ -669,7 +684,7 @@ decimal = number Decimal
 --   digits.
 lowHex' ∷ (Ord α, Integral α, Printer p)
         ⇒ p -- ^ Prefix for negative values
-        → p -- ^ Prefix for the zero
+        → p -- ^ Zero printer
         → p -- ^ Prefix for positive values
         → α → p
 lowHex' = number' LowHex
@@ -685,7 +700,7 @@ lowHex = number LowHex
 --   digits.
 upHex' ∷ (Ord α, Integral α, Printer p)
        ⇒ p -- ^ Prefix for negative values
-       → p -- ^ Prefix for the zero
+       → p -- ^ Zero printer
        → p -- ^ Prefix for positive values
        → α → p
 upHex' = number' UpHex
@@ -701,7 +716,7 @@ upHex = number UpHex
 bits' ∷ (BitSystem s, Ord α, Num α, Bits α, Printer p)
       ⇒ s
       → p -- ^ Prefix for negative values
-      → p -- ^ Prefix for the zero
+      → p -- ^ Zero printer
       → p -- ^ Prefix for positive values
       → α → p
 bits' s neg z pos n = case compare n 0 of
@@ -715,7 +730,7 @@ bits' s neg z pos n = case compare n 0 of
                          | otherwise = complement $ shiftR n digitBits
              where !d  = lastDigitIn s n
                    !d' = intToDigitIn s $ (radix - d) .&. digitMask
-    EQ → z <> (printDigitIn s $! intToDigitIn s 0)
+    EQ → z
     GT → go pos (shiftR n digitBits) <> printDigitIn s d
       where !d = intToDigitIn s $ lastDigitIn s n
   where go p 0 = p
@@ -784,13 +799,13 @@ bits' s neg z pos n = case compare n 0 of
 -- | Print a binary number in the specified positional numeral system.
 --   Negative values are prefixed with a minus sign.
 bits ∷ (BitSystem s, Ord α, Num α, Bits α, Printer p) ⇒ s → α → p
-bits s = bits' s (char7 '-') mempty mempty
+bits s = bits' s (char7 '-') (printZeroIn s) mempty
 {-# INLINE bits #-}
 
 -- | Print a binary number in the binary numeral system.
 binaryBits' ∷ (Ord α, Num α, Bits α, Printer p)
             ⇒ p -- ^ Prefix for negative values
-            → p -- ^ Prefix for the zero
+            → p -- ^ Zero printer
             → p -- ^ Prefix for positive values
             → α → p
 binaryBits' = bits' Binary
@@ -805,7 +820,7 @@ binaryBits = bits Binary
 -- | Print a binary number in the octal numeral system.
 octalBits' ∷ (Ord α, Num α, Bits α, Printer p)
            ⇒ p -- ^ Prefix for negative values
-           → p -- ^ Prefix for the zero
+           → p -- ^ Zero printer
            → p -- ^ Prefix for positive values
            → α → p
 octalBits' = bits' Octal
@@ -821,7 +836,7 @@ octalBits = bits Octal
 --   case digits.
 lowHexBits' ∷ (Ord α, Num α, Bits α, Printer p)
             ⇒ p -- ^ Prefix for negative values
-            → p -- ^ Prefix for the zero
+            → p -- ^ Zero printer
             → p -- ^ Prefix for positive values
             → α → p
 lowHexBits' = bits' LowHex
@@ -837,7 +852,7 @@ lowHexBits = bits LowHex
 --   case digits.
 upHexBits' ∷ (Ord α, Num α, Bits α, Printer p)
            ⇒ p -- ^ Prefix for negative values
-           → p -- ^ Prefix for the zero
+           → p -- ^ Zero printer
            → p -- ^ Prefix for positive values
            → α → p
 upHexBits' = bits' UpHex
