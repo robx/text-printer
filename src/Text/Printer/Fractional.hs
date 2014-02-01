@@ -1,35 +1,75 @@
 {-# LANGUAGE UnicodeSyntax #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 
 -- | Print fractions.
 module Text.Printer.Fractional
-  ( fraction'
+  (
+  -- * Positional numeral systems
+    PositionalSystem(..)
+  , BitSystem(..)
+  , Binary(..)
+  , Octal(..)
+  , Decimal(..)
+  , Hexadecimal(..)
+  , LowHex(..)
+  , UpHex(..)
+  -- * Optionality characteristic
+  , Optional(..)
+  , isOptional
+  , isRequired
+  -- * Fraction printers
+  , fraction'
   , fraction
   ) where
 
-import Data.Ratio (numerator, denominator)
+import Data.Typeable (Typeable)
+import Data.Ix (Ix)
 import Data.Monoid (mempty)
+import Data.Ratio (numerator, denominator)
 import Text.Printer
 import Text.Printer.Integral
 
--- | Print a fraction in the decimal numeral system.
-fraction' ∷ (Real α, Printer p)
-          ⇒ p -- ^ Prefix for negative values
+-- | Optionality characteristic.
+data Optional = Optional
+              | Required
+              deriving (Typeable, Show, Read, Eq, Ord, Enum, Bounded, Ix)
+
+-- | True if the supplied value is 'Optional' and false otherwise.
+isOptional ∷ Optional → Bool
+isOptional Optional = True
+isOptional Required = False
+
+-- | True if the supplied value is 'Required' and false otherwise.
+isRequired ∷ Optional → Bool
+isRequired Optional = False
+isRequired Required = True
+
+-- | Print a fraction, writing the numerator and the denominator in
+--   the specified positional numeral system.
+fraction' ∷ (PositionalSystem s, Real α, Printer p)
+          ⇒ s
+          → p -- ^ Prefix for negative values
           → p -- ^ Prefix for the zero
           → p -- ^ Prefix for positive values
-          → p -- ^ Dividing symbol
+          → p -- ^ Numerator/denominator separator
+          → Optional -- ^ Whether to print invisible denominators
           → α → p
-fraction' neg z pos ds a =
-    if d == 1
-    then decimal' neg z pos n
-    else decimal' neg z pos n <> ds <> nnDecimal d
+fraction' s neg z pos sep i a
+    | n == 0    = z <> (printDigitIn s $! intToDigitIn s 0)
+    | d == 1    = case i of
+                    Optional → number' s neg z pos n
+                    Required →  number' s neg z pos n
+                             <> sep
+                             <> (printDigitIn s $! intToDigitIn s 1)
+    | otherwise = if n < 0
+                  then neg <> nonPositive s n <> sep <> nonNegative s d
+                  else pos <> nonNegative s n <> sep <> nonNegative s d
   where r = toRational a
         n = numerator r
         d = denominator r
 
--- | Print a fraction in the decimal numeral system. Numerator and
---   denominotor are separated with a slash, negative values are prefixed
---   with a minus sign.
+-- | Print a fraction. The numerator and the denominator are written in the
+--   decimal numeral system and separated by a slash. Negative values
+--   are prefixed with a minus sign. Invisible denominators are omitted.
 fraction ∷ (Real α, Printer p) ⇒ α → p
-fraction = fraction' (char7 '-') mempty mempty (char7 '/')
-{-# INLINE fraction #-}
-
+fraction = fraction' Decimal (char7 '-') mempty mempty (char7 '/') Optional

@@ -848,5 +848,3 @@ upHexBits' = bits' UpHex
 upHexBits ∷ (Ord α, Num α, Bits α, Printer p) ⇒ α → p
 upHexBits = bits UpHex
 {-# INLINE upHexBits #-}
-
-
