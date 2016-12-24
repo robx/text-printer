@@ -52,7 +52,10 @@ import Prelude hiding (foldr, foldr1, print, lines)
 import Data.Typeable (Typeable)
 import Data.String (IsString(..))
 import qualified Data.Semigroup as S
-import Data.Monoid (Monoid(..), (<>))
+import Data.Monoid (Monoid(..))
+#if MIN_VERSION_base(4,5,0)
+import Data.Monoid ((<>))
+#endif
 import Data.Foldable (Foldable(..), toList)
 import Data.Traversable (Traversable, mapAccumL, mapAccumR)
 import qualified Data.Text as TS
