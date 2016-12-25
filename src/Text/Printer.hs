@@ -174,12 +174,17 @@ newtype AsciiBuilder = AsciiBuilder { asciiBuilder ∷ BB.Builder }
 #if __GLASGOW_HASKELL__ >= 706
                                 , Generic
 #endif
-                                , Semigroup
                                 , Monoid)
 
 instance IsString AsciiBuilder where
   fromString = AsciiBuilder . BB.string7
   {-# INLINE fromString #-}
+
+instance Semigroup AsciiBuilder where
+  b₁ <> b₂ = AsciiBuilder $ asciiBuilder b₁ <> asciiBuilder b₂
+  {-# INLINE (<>) #-}
+  stimes = S.stimesMonoid
+  {-# INLINE stimes #-}
 
 instance Printer AsciiBuilder where
   char = AsciiBuilder . BB.char7
@@ -207,12 +212,17 @@ newtype Utf8Builder = Utf8Builder { utf8Builder ∷ BB.Builder }
 #if __GLASGOW_HASKELL__ >= 706
                                , Generic
 #endif
-                               , Semigroup
                                , Monoid)
 
 instance IsString Utf8Builder where
   fromString = Utf8Builder . BB.stringUtf8
   {-# INLINE fromString #-}
+
+instance Semigroup Utf8Builder where
+  b₁ <> b₂ = Utf8Builder $ utf8Builder b₁ <> utf8Builder b₂
+  {-# INLINE (<>) #-}
+  stimes = S.stimesMonoid
+  {-# INLINE stimes #-}
 
 instance Printer Utf8Builder where
   char = Utf8Builder . BB.charUtf8
