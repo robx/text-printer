@@ -1,5 +1,5 @@
 Name: text-printer
-Version: 0.4
+Version: 0.5
 Category: Text
 Stability: experimental
 Synopsis: Abstract interface for text builders/printers.
