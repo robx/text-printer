@@ -21,6 +21,8 @@ module Text.Printer
   , Utf8Builder(..)
   , buildUtf8
   , buildLazyUtf8
+  , PrettyPrinter(..)
+  , renderPretty
   -- * Combinators
   , (<>)
   , hcat
@@ -51,6 +53,7 @@ module Text.Printer
 import Prelude hiding (foldr, foldr1, print, lines)
 import Data.Typeable (Typeable)
 import Data.String (IsString(..))
+import Data.Semigroup (Semigroup)
 import qualified Data.Semigroup as S
 import Data.Monoid (Monoid(..))
 #if MIN_VERSION_base(4,5,0)
@@ -76,7 +79,7 @@ import qualified Text.PrettyPrint as PP
 --   Other operations must be monoid homomorphisms that are eqiuvalent (but
 --   possibly faster) to the composition of 'string' and the corresponding
 --   embedding, e.g. @'text' = 'string' . 'TS.unpack'@.
-class (IsString p, Monoid p) ⇒ Printer p where
+class (IsString p, Semigroup p, Monoid p) ⇒ Printer p where
   -- | Print a character. @'char' /c/@ must be equivalent to
   --   @'string' [/c/]@, but hopefully is faster.
   char ∷ Char → p
@@ -123,15 +126,11 @@ instance Printer String where
 
 -- | A simple string builder as used by 'Show'.
 newtype StringBuilder = StringBuilder { stringBuilder ∷ String → String }
-                        deriving (Typeable, Monoid)
+                        deriving (Typeable, Semigroup, Monoid)
 
 instance IsString StringBuilder where
   fromString s = StringBuilder (s ++)
   {-# INLINE fromString #-}
-
-instance S.Semigroup StringBuilder where
-  (<>) = mappend
-  {-# INLINE (<>) #-}
 
 instance Printer StringBuilder where
   char c = StringBuilder (c :)
@@ -160,15 +159,11 @@ buildLazyText = TB.toLazyText
 -- | Use this builder when you are sure that only ASCII characters
 --   will get printed to it.
 newtype AsciiBuilder = AsciiBuilder { asciiBuilder ∷ BB.Builder }
-                       deriving (Typeable, Monoid)
+                       deriving (Typeable, Semigroup, Monoid)
 
 instance IsString AsciiBuilder where
   fromString = AsciiBuilder . BB.string7
   {-# INLINE fromString #-}
-
-instance S.Semigroup AsciiBuilder where
-  (<>) = mappend
-  {-# INLINE (<>) #-}
 
 instance Printer AsciiBuilder where
   char = AsciiBuilder . BB.char7
@@ -192,15 +187,11 @@ buildLazyAscii = BB.toLazyByteString . asciiBuilder
 
 -- | UTF-8 lazy 'BL.ByteString' builder.
 newtype Utf8Builder = Utf8Builder { utf8Builder ∷ BB.Builder }
-                      deriving (Typeable, Monoid)
+                      deriving (Typeable, Semigroup, Monoid)
 
 instance IsString Utf8Builder where
   fromString = Utf8Builder . BB.stringUtf8
   {-# INLINE fromString #-}
-
-instance S.Semigroup Utf8Builder where
-  (<>) = mappend
-  {-# INLINE (<>) #-}
 
 instance Printer Utf8Builder where
   char = Utf8Builder . BB.charUtf8
@@ -230,9 +221,47 @@ buildLazyUtf8 ∷ Utf8Builder → BL.ByteString
 buildLazyUtf8 = BB.toLazyByteString . utf8Builder
 {-# INLINE buildLazyUtf8 #-}
 
-instance Printer PP.Doc where
-  char = PP.char
+newtype PrettyPrinter = PrettyPrinter { prettyPrinter ∷ PP.Doc }
+                        deriving ( Typeable
+#if MIN_VERSION_pretty(1,1,0)
+                                 , IsString
+# if MIN_VERSION_base(4,9,0)
+                                 , Semigroup
+# endif
+                                 , Monoid
+#endif
+                                 )
+
+#if !MIN_VERSION_pretty(1,1,0)
+instance IsString PrettyPrinter where
+  fromString = PrettyPrinter . PP.text
+  {-# INLINE fromString #-}
+#endif
+
+#if !MIN_VERSION_base(4,9,0) || !MIN_VERSION_pretty(1,1,0)
+instance Semigroup PrettyPrinter where
+  p₁ <> p₂ = PrettyPrinter
+           $ (PP.<>) (prettyPrinter p₁) (prettyPrinter p₂)
+  {-# INLINE (<>) #-}
+  stimes = S.stimesMonoid
+  {-# INLINE stimes #-}
+#endif
+
+#if !MIN_VERSION_pretty(1,1,0)
+instance Monoid PrettyPrinter where
+  mempty = PP.empty
+  {-# INLINE mempty #-}
+  mappend = (S.<>)
+  {-# INLINE mappend #-}
+#endif
+
+instance Printer PrettyPrinter where
+  char = PrettyPrinter . PP.char
   {-# INLINE char #-}
+
+-- | An alias for @'PP.render' . 'prettyPrinter'@
+renderPretty ∷ PrettyPrinter → String
+renderPretty = PP.render . prettyPrinter
 
 #if !MIN_VERSION_base(4,5,0)
 -- | An infix synonym for 'mappend'.
@@ -344,8 +373,9 @@ class Printer p ⇒ MultilinePrinter p where
   --   /x/ '<->' (/y/ '<->' /z/) = (/x/ '<->' /y/) '<->' /z/.
   (<->) ∷ p → p → p
 
-instance MultilinePrinter PP.Doc where
-  (<->) = (PP.$+$)
+instance MultilinePrinter PrettyPrinter where
+  p₁ <-> p₂ = PrettyPrinter 
+            $ (PP.$+$) (prettyPrinter p₁) (prettyPrinter p₂)
   {-# INLINE (<->) #-}
 
 -- | Combine the items of a 'Foldable' data structure with '<->'.
@@ -371,11 +401,16 @@ instance IsString p ⇒ IsString (LinePrinter p) where
   fromString = LinePrinter . const . fromString
   {-# INLINE fromString #-}
 
+instance Semigroup p ⇒ Semigroup (LinePrinter p) where
+  x <> y = LinePrinter $ \l → linePrinter x l S.<> linePrinter y l
+  {-# INLINE (<>) #-}
+  stimes n x = LinePrinter $ S.stimes n . linePrinter x
+  {-# INLINE stimes #-}
+
 instance Monoid p ⇒ Monoid (LinePrinter p) where
   mempty = LinePrinter $ const mempty
   {-# INLINE mempty #-}
-  mappend x y = LinePrinter $ \l →
-                  mappend (linePrinter x l) (linePrinter y l)
+  mappend x y = LinePrinter $ \l → mappend (linePrinter x l) (linePrinter y l)
   {-# INLINE mappend #-}
   mconcat xs = LinePrinter $ \l → mconcat (map (\x → linePrinter x l) xs)
   {-# INLINE mconcat #-}
@@ -415,4 +450,3 @@ lfPrinter p = linePrinter p (separate newLine)
 crlfPrinter ∷ Printer p ⇒ LinePrinter p → p
 crlfPrinter p = linePrinter p (separate crlf)
 {-# INLINE crlfPrinter #-}
-
