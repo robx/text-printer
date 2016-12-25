@@ -1,5 +1,9 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE UnicodeSyntax #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+#if __GLASGOW_HASKELL__ >= 706
+{-# LANGUAGE DeriveGeneric #-}
+#endif
 {-# LANGUAGE BangPatterns #-}
 
 -- | Print integral numbers in common positional numeral systems. 
@@ -61,6 +65,9 @@ module Text.Printer.Integral
   , upHexBits
   ) where
 
+#if __GLASGOW_HASKELL__ >= 706
+import GHC.Generics (Generic)
+#endif
 import Data.Typeable (Typeable)
 import Data.Char (chr, ord)
 import Data.Int
@@ -110,7 +117,11 @@ class PositionalSystem s ⇒ BitSystem s where
   lastDigitIn ∷ Bits α ⇒ s → α → Int
 
 -- | The binary numeral system.
-data Binary = Binary deriving (Typeable, Eq, Ord, Show, Read)
+data Binary = Binary deriving ( Typeable
+#if __GLASGOW_HASKELL__ >= 706
+                              , Generic
+#endif
+                              , Eq, Ord, Show, Read )
 
 instance PositionalSystem Binary where
   systemName _ = "binary"
@@ -141,7 +152,11 @@ instance BitSystem Binary where
   {-# INLINE lastDigitIn #-}
 
 -- | The octal numeral system.
-data Octal = Octal deriving (Typeable, Eq, Ord, Show, Read)
+data Octal = Octal deriving ( Typeable
+#if __GLASGOW_HASKELL__ >= 706
+                            , Generic
+#endif
+                            , Eq, Ord, Show, Read )
 
 instance PositionalSystem Octal where
   systemName _ = "octal"
@@ -174,7 +189,11 @@ instance BitSystem Octal where
   {-# INLINE lastDigitIn #-}
 
 -- | The decimal numeral system.
-data Decimal = Decimal deriving (Typeable, Eq, Ord, Show, Read)
+data Decimal = Decimal deriving ( Typeable
+#if __GLASGOW_HASKELL__ >= 706
+                                , Generic
+#endif
+                                , Eq, Ord, Show, Read )
 
 instance PositionalSystem Decimal where
   systemName _ = "decimal"
@@ -197,7 +216,11 @@ instance PositionalSystem Decimal where
   {-# INLINE printZeroIn #-}
 
 -- | The hexadecimal numeral system.
-data Hexadecimal = Hexadecimal
+data Hexadecimal = Hexadecimal deriving ( Typeable
+#if __GLASGOW_HASKELL__ >= 706
+                                        , Generic
+#endif
+                                        , Eq, Ord, Show, Read )
 
 instance PositionalSystem Hexadecimal where
   systemName _ = "hexadecimal"
@@ -232,7 +255,11 @@ instance BitSystem Hexadecimal where
   {-# INLINABLE lastDigitIn #-}
 
 -- | The hexadecimal numeral system, using lower case digits.
-data LowHex = LowHex
+data LowHex = LowHex deriving ( Typeable
+#if __GLASGOW_HASKELL__ >= 706
+                              , Generic
+#endif
+                              , Eq, Ord, Show, Read )
 
 instance PositionalSystem LowHex where
   systemName _ = "lower case hexadecimal"
@@ -267,7 +294,11 @@ instance BitSystem LowHex where
   {-# INLINABLE lastDigitIn #-}
 
 -- | The hexadecimal numeral system, using upper case digits.
-data UpHex = UpHex
+data UpHex = UpHex deriving ( Typeable
+#if __GLASGOW_HASKELL__ >= 706
+                            , Generic
+#endif
+                            , Eq, Ord, Show, Read )
 
 instance PositionalSystem UpHex where
   systemName _ = "upper case hexadecimal"

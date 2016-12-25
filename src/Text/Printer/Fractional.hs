@@ -1,5 +1,9 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE UnicodeSyntax #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+#if __GLASGOW_HASKELL__ >= 706
+{-# LANGUAGE DeriveGeneric #-}
+#endif
 
 -- | Print fractions.
 module Text.Printer.Fractional
@@ -22,6 +26,9 @@ module Text.Printer.Fractional
   , fraction
   ) where
 
+#if __GLASGOW_HASKELL__ >= 706
+import GHC.Generics (Generic)
+#endif
 import Data.Typeable (Typeable)
 import Data.Ix (Ix)
 import Data.Monoid (mempty)
@@ -32,7 +39,11 @@ import Text.Printer.Integral
 -- | Optionality characteristic.
 data Optional = Optional
               | Required
-              deriving (Typeable, Show, Read, Eq, Ord, Enum, Bounded, Ix)
+              deriving ( Typeable
+#if __GLASGOW_HASKELL__ >= 706
+                       , Generic
+#endif
+                       , Show, Read, Eq, Ord, Enum, Bounded, Ix)
 
 -- | True if the supplied value is 'Optional' and false otherwise.
 isOptional ∷ Optional → Bool

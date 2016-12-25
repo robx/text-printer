@@ -2,6 +2,9 @@
 {-# LANGUAGE UnicodeSyntax #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+#if __GLASGOW_HASKELL__ >= 706
+{-# LANGUAGE DeriveGeneric #-}
+#endif
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 
@@ -51,6 +54,9 @@ module Text.Printer
   ) where
 
 import Prelude hiding (foldr, foldr1, print, lines)
+#if __GLASGOW_HASKELL__ >= 706
+import GHC.Generics (Generic)
+#endif
 import Data.Typeable (Typeable)
 import Data.String (IsString(..))
 import Data.Semigroup (Semigroup)
@@ -126,7 +132,12 @@ instance Printer String where
 
 -- | A simple string builder as used by 'Show'.
 newtype StringBuilder = StringBuilder { stringBuilder ∷ String → String }
-                        deriving (Typeable, Semigroup, Monoid)
+                        deriving ( Typeable
+#if __GLASGOW_HASKELL__ >= 706
+                                 , Generic
+#endif
+                                 , Semigroup
+                                 , Monoid)
 
 instance IsString StringBuilder where
   fromString s = StringBuilder (s ++)
@@ -159,7 +170,12 @@ buildLazyText = TB.toLazyText
 -- | Use this builder when you are sure that only ASCII characters
 --   will get printed to it.
 newtype AsciiBuilder = AsciiBuilder { asciiBuilder ∷ BB.Builder }
-                       deriving (Typeable, Semigroup, Monoid)
+                       deriving ( Typeable
+#if __GLASGOW_HASKELL__ >= 706
+                                , Generic
+#endif
+                                , Semigroup
+                                , Monoid)
 
 instance IsString AsciiBuilder where
   fromString = AsciiBuilder . BB.string7
@@ -187,7 +203,12 @@ buildLazyAscii = BB.toLazyByteString . asciiBuilder
 
 -- | UTF-8 lazy 'BL.ByteString' builder.
 newtype Utf8Builder = Utf8Builder { utf8Builder ∷ BB.Builder }
-                      deriving (Typeable, Semigroup, Monoid)
+                      deriving ( Typeable
+#if __GLASGOW_HASKELL__ >= 706
+                               , Generic
+#endif
+                               , Semigroup
+                               , Monoid)
 
 instance IsString Utf8Builder where
   fromString = Utf8Builder . BB.stringUtf8
@@ -223,6 +244,9 @@ buildLazyUtf8 = BB.toLazyByteString . utf8Builder
 
 newtype PrettyPrinter = PrettyPrinter { prettyPrinter ∷ PP.Doc }
                         deriving ( Typeable
+#if __GLASGOW_HASKELL__ >= 706
+                                 , Generic
+#endif
 #if MIN_VERSION_pretty(1,1,0)
                                  , IsString
 # if MIN_VERSION_base(4,9,0)
@@ -395,7 +419,11 @@ crlf = char '\r' <> char '\n'
 
 -- | A multiline printer that combines lines with the provided function.
 newtype LinePrinter p = LinePrinter { linePrinter ∷ (p → p → p) → p }
-                        deriving Typeable
+                        deriving ( Typeable
+#if __GLASGOW_HASKELL__ >= 706
+                                 , Generic
+#endif
+                                 )
 
 instance IsString p ⇒ IsString (LinePrinter p) where
   fromString = LinePrinter . const . fromString
