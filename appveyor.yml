@@ -1,4 +1,3 @@
-## AppVeyor is used for building a Windows binary on new tag releases
 platform: x64
 
 cache:
