@@ -653,12 +653,12 @@ number' s neg z pos n = case compare n 0 of
 {-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word16 → p #-}
 {-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word32 → p #-}
 {-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word64 → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Binary → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Decimal → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Octal → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Hexadecimal → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ LowHex → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ UpHex → p → p → p → α → p #-}
+{-# SPECIALIZE number' ∷ (Ord a, Integral a, Printer p) ⇒ Binary → p → p → p → a → p #-}
+{-# SPECIALIZE number' ∷ (Ord a, Integral a, Printer p) ⇒ Decimal → p → p → p → a → p #-}
+{-# SPECIALIZE number' ∷ (Ord a, Integral a, Printer p) ⇒ Octal → p → p → p → a → p #-}
+{-# SPECIALIZE number' ∷ (Ord a, Integral a, Printer p) ⇒ Hexadecimal → p → p → p → a → p #-}
+{-# SPECIALIZE number' ∷ (Ord a, Integral a, Printer p) ⇒ LowHex → p → p → p → a → p #-}
+{-# SPECIALIZE number' ∷ (Ord a, Integral a, Printer p) ⇒ UpHex → p → p → p → a → p #-}
 
 -- | Print a number in the specified positional numeral system. Negative
 --   values are prefixed with a minus sign.
