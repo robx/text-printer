@@ -9,8 +9,6 @@ environment:
     STACK_ROOT: "c:\\sr"
     TMP: "c:\\tmp"
 
-test: off
-
 install:
 - set PATH=C:\Program Files\PostgreSQL\9.6\bin\;%PATH%
 - curl -sS -ostack.zip -L --insecure http://www.stackage.org/stack/windows-x86_64
