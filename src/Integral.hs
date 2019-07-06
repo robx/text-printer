@@ -26,26 +26,12 @@ import Data.Monoid (Monoid(..))
 class PositionalSystem s where
   -- | The radix of the system.
   radixIn ∷ Num α ⇒ s → α
-  -- | Test if a character is a digit.
-  isNzDigitIn ∷ s → Char → Bool
-  -- | Map digits to the corresponding numbers. Return 'Nothing' on
-  --   other inputs.
-  fromDigitIn ∷ Num α ⇒ s → Char → Maybe α
-  -- | Map non-zero digits to the corresponding numbers. Return 'Nothing' on
-  --   other inputs.
-  fromNzDigitIn ∷ Num α ⇒ s → Char → Maybe α
   -- | Map digits to the corresponding numbers. No checks are performed.
-  unsafeFromDigitIn ∷ Num α ⇒ s → Char → α
-  -- | Map 'Int' values to the corresponding digits. Inputs /must/ be
-  --   non-negative and less than the radix.
   intToDigitIn ∷ s → Int → Char
   -- | Print a digit.
   printDigitIn ∷ Printer p ⇒ s → Char → p
   printDigitIn _ = char7
   {-# INLINE printDigitIn #-}
-  printZeroIn ∷ Printer p ⇒ s → p
-  printZeroIn s = printDigitIn s $! intToDigitIn s 0
-  {-# INLINE printZeroIn #-}
 
 -- | The binary numeral system.
 data Binary = Binary deriving ( Typeable
@@ -54,20 +40,8 @@ data Binary = Binary deriving ( Typeable
 instance PositionalSystem Binary where
   radixIn _ = 2
   {-# INLINE radixIn #-}
-  isDigitIn _ = A.isBinDigit
-  {-# INLINE isDigitIn #-}
-  isNzDigitIn _ = A.isNzBinDigit
-  {-# INLINE isNzDigitIn #-}
-  fromDigitIn _ = A.fromBinDigit
-  {-# INLINE fromDigitIn #-}
-  fromNzDigitIn _ = A.fromNzBinDigit
-  {-# INLINE fromNzDigitIn #-}
-  unsafeFromDigitIn _ = A.unsafeFromBinDigit
-  {-# INLINE unsafeFromDigitIn #-}
   intToDigitIn _ i = chr $! ord '0' + i
   {-# INLINE intToDigitIn #-}
-  printZeroIn _ = char7 '0'
-  {-# INLINE printZeroIn #-}
 
 -- | The octal numeral system.
 data Octal = Octal deriving ( Typeable
@@ -76,20 +50,8 @@ data Octal = Octal deriving ( Typeable
 instance PositionalSystem Octal where
   radixIn _ = 8
   {-# INLINE radixIn #-}
-  isDigitIn _ = A.isOctDigit
-  {-# INLINE isDigitIn #-}
-  isNzDigitIn _ = A.isNzOctDigit
-  {-# INLINE isNzDigitIn #-}
-  fromDigitIn _ = A.fromOctDigit
-  {-# INLINE fromDigitIn #-}
-  fromNzDigitIn _ = A.fromNzOctDigit
-  {-# INLINE fromNzDigitIn #-}
-  unsafeFromDigitIn _ = A.unsafeFromOctDigit
-  {-# INLINE unsafeFromDigitIn #-}
   intToDigitIn _ i = chr $! ord '0' + i
   {-# INLINE intToDigitIn #-}
-  printZeroIn _ = char7 '0'
-  {-# INLINE printZeroIn #-}
 
 -- | The decimal numeral system.
 data Decimal = Decimal deriving ( Typeable
@@ -98,20 +60,8 @@ data Decimal = Decimal deriving ( Typeable
 instance PositionalSystem Decimal where
   radixIn _ = 10
   {-# INLINE radixIn #-}
-  isDigitIn _ = A.isDecDigit
-  {-# INLINE isDigitIn #-}
-  isNzDigitIn _ = A.isNzDecDigit
-  {-# INLINE isNzDigitIn #-}
-  fromDigitIn _ = A.fromDecDigit
-  {-# INLINE fromDigitIn #-}
-  fromNzDigitIn _ = A.fromNzDecDigit
-  {-# INLINE fromNzDigitIn #-}
-  unsafeFromDigitIn _ = A.unsafeFromDecDigit
-  {-# INLINE unsafeFromDigitIn #-}
   intToDigitIn _ i = chr $! ord '0' + i
   {-# INLINE intToDigitIn #-}
-  printZeroIn _ = char7 '0'
-  {-# INLINE printZeroIn #-}
 
 -- | The hexadecimal numeral system.
 data Hexadecimal = Hexadecimal deriving ( Typeable
@@ -120,21 +70,9 @@ data Hexadecimal = Hexadecimal deriving ( Typeable
 instance PositionalSystem Hexadecimal where
   radixIn _ = 16
   {-# INLINE radixIn #-}
-  isDigitIn _ = A.isHexDigit
-  {-# INLINE isDigitIn #-}
-  isNzDigitIn _ = A.isNzHexDigit
-  {-# INLINE isNzDigitIn #-}
-  fromDigitIn _ = A.fromHexDigit
-  {-# INLINE fromDigitIn #-}
-  fromNzDigitIn _ = A.fromNzHexDigit
-  {-# INLINE fromNzDigitIn #-}
-  unsafeFromDigitIn _ = A.unsafeFromHexDigit
-  {-# INLINE unsafeFromDigitIn #-}
   intToDigitIn _ i | i < 10    = chr $! ord '0' + i
                    | otherwise = chr $! ord 'A' + (i - 10) 
   {-# INLINE intToDigitIn #-}
-  printZeroIn _ = char7 '0'
-  {-# INLINE printZeroIn #-}
 
 -- | The hexadecimal numeral system, using lower case digits.
 data LowHex = LowHex deriving ( Typeable
@@ -143,21 +81,9 @@ data LowHex = LowHex deriving ( Typeable
 instance PositionalSystem LowHex where
   radixIn _ = 16
   {-# INLINE radixIn #-}
-  isDigitIn _ = A.isLowHexDigit
-  {-# INLINE isDigitIn #-}
-  isNzDigitIn _ = A.isNzLowHexDigit
-  {-# INLINE isNzDigitIn #-}
-  fromDigitIn _ = A.fromLowHexDigit
-  {-# INLINE fromDigitIn #-}
-  fromNzDigitIn _ = A.fromNzLowHexDigit
-  {-# INLINE fromNzDigitIn #-}
-  unsafeFromDigitIn _ = A.unsafeFromLowHexDigit
-  {-# INLINE unsafeFromDigitIn #-}
   intToDigitIn _ i | i < 10    = chr $! ord '0' + i
                    | otherwise = chr $! ord 'a' + (i - 10) 
   {-# INLINE intToDigitIn #-}
-  printZeroIn _ = char7 '0'
-  {-# INLINE printZeroIn #-}
 
 -- | The hexadecimal numeral system, using upper case digits.
 data UpHex = UpHex deriving ( Typeable
@@ -166,21 +92,9 @@ data UpHex = UpHex deriving ( Typeable
 instance PositionalSystem UpHex where
   radixIn _ = 16
   {-# INLINE radixIn #-}
-  isDigitIn _ = A.isUpHexDigit
-  {-# INLINE isDigitIn #-}
-  isNzDigitIn _ = A.isNzUpHexDigit
-  {-# INLINE isNzDigitIn #-}
-  fromDigitIn _ = A.fromUpHexDigit
-  {-# INLINE fromDigitIn #-}
-  fromNzDigitIn _ = A.fromNzUpHexDigit
-  {-# INLINE fromNzDigitIn #-}
-  unsafeFromDigitIn _ = A.unsafeFromUpHexDigit
-  {-# INLINE unsafeFromDigitIn #-}
   intToDigitIn _ i | i < 10    = chr $! ord '0' + i
                    | otherwise = chr $! ord 'A' + (i - 10) 
   {-# INLINE intToDigitIn #-}
-  printZeroIn _ = char7 '0'
-  {-# INLINE printZeroIn #-}
 
 -- | Print a number in the specified positional numeral system.
 number' ∷ (PositionalSystem s, Ord α, Integral α, Printer p)
