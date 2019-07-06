@@ -13,7 +13,6 @@ module Integral
     number'
   ) where
 
-import GHC.Generics (Generic)
 import Data.Typeable (Typeable)
 import Data.Char (chr, ord)
 import Data.Int
