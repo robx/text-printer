@@ -15,5 +15,6 @@ install:
 - 7z x stack.zip stack.exe
 
 build_script:
+- env
 - stack setup --no-terminal > nul
 - stack build -j1 --copy-bins --local-bin-path .
