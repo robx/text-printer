@@ -13,7 +13,6 @@ module Integral
 import Data.Char (chr, ord)
 import Data.Int
 import Data.Word
-import Prelude hiding (foldr, foldr1, print, lines)
 import Data.String (IsString(..))
 import Data.Monoid (Monoid(..))
 
