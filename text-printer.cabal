@@ -32,8 +32,7 @@ Source-Repository head
 Library
   Default-Language: Haskell2010
   Build-Depends:
-    base >= 4.4 && < 5,
-    text-latin1 >= 0.3.1
+    base >= 4.4 && < 5
   Hs-Source-Dirs: src
   GHC-Options: -Wall
   Exposed-Modules:
