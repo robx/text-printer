@@ -16,5 +16,6 @@ install:
 
 build_script:
 - env
+- locale
 - stack setup --no-terminal > nul
 - stack build -j1 --copy-bins --local-bin-path .
