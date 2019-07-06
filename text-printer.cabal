@@ -41,5 +41,4 @@ Library
   Hs-Source-Dirs: src
   GHC-Options: -Wall
   Exposed-Modules:
-    Text.Printer
-    Text.Printer.Integral
+    Integral
