@@ -624,7 +624,7 @@ npUpHexBits = npBits UpHex
 {-# INLINE npUpHexBits #-}
 
 -- | Print a number in the specified positional numeral system.
-number' ∷ (PositionalSystem s, Ord α, Integral α, Printer p)
+number' ∷ (PositionalSystem s, Integral α, Printer p)
         ⇒ s
         → p -- ^ Prefix for negative values
         → p -- ^ Zero printer
@@ -653,21 +653,21 @@ number' s neg z pos n = case compare n 0 of
 {-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word16 → p #-}
 {-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word32 → p #-}
 {-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word64 → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Binary → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Decimal → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Octal → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Hexadecimal → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ LowHex → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ UpHex → p → p → p → α → p #-}
+{-# SPECIALIZE number' ∷ (Integral α, Printer p) ⇒ Binary → p → p → p → α → p #-}
+{-# SPECIALIZE number' ∷ (Integral α, Printer p) ⇒ Decimal → p → p → p → α → p #-}
+{-# SPECIALIZE number' ∷ (Integral α, Printer p) ⇒ Octal → p → p → p → α → p #-}
+{-# SPECIALIZE number' ∷ (Integral α, Printer p) ⇒ Hexadecimal → p → p → p → α → p #-}
+{-# SPECIALIZE number' ∷ (Integral α, Printer p) ⇒ LowHex → p → p → p → α → p #-}
+{-# SPECIALIZE number' ∷ (Integral α, Printer p) ⇒ UpHex → p → p → p → α → p #-}
 
 -- | Print a number in the specified positional numeral system. Negative
 --   values are prefixed with a minus sign.
-number ∷ (PositionalSystem s, Ord α, Integral α, Printer p) ⇒ s → α → p
+number ∷ (PositionalSystem s, Integral α, Printer p) ⇒ s → α → p
 number s = number' s (char7 '-') (printZeroIn s) mempty
 {-# INLINE number #-}
 
 -- | Print a number in the binary numeral system.
-binary' ∷ (Ord α, Integral α, Printer p)
+binary' ∷ (Integral α, Printer p)
         ⇒ p -- ^ Prefix for negative values
         → p -- ^ Zero printer
         → p -- ^ Prefix for positive values
@@ -677,12 +677,12 @@ binary' = number' Binary
 
 -- | Print a number in the binary numeral system. Negative values
 --   are prefixed with a minus sign.
-binary ∷ (Ord α, Integral α, Printer p) ⇒ α → p
+binary ∷ (Integral α, Printer p) ⇒ α → p
 binary = number Binary
 {-# INLINE binary #-}
 
 -- | Print a number in the octal numeral system.
-octal' ∷ (Ord α, Integral α, Printer p)
+octal' ∷ (Integral α, Printer p)
        ⇒ p -- ^ Prefix for negative values
        → p -- ^ Zero printer
        → p -- ^ Prefix for positive values
@@ -692,12 +692,12 @@ octal' = number' Octal
 
 -- | Print a number in the octal numeral system. Negative values
 --   are prefixed with a minus sign.
-octal ∷ (Ord α, Integral α, Printer p) ⇒ α → p
+octal ∷ (Integral α, Printer p) ⇒ α → p
 octal = number Octal
 {-# INLINE octal #-}
 
 -- | Print a number in the decimal numeral system.
-decimal' ∷ (Ord α, Integral α, Printer p)
+decimal' ∷ (Integral α, Printer p)
          ⇒ p -- ^ Prefix for negative values
          → p -- ^ Zero printer
          → p -- ^ Prefix for positive values
@@ -707,13 +707,13 @@ decimal' = number' Decimal
 
 -- | Print a number in the decimal numeral system. Negative values
 --   are prefixed with a minus sign.
-decimal ∷ (Ord α, Integral α, Printer p) ⇒ α → p
+decimal ∷ (Integral α, Printer p) ⇒ α → p
 decimal = number Decimal
 {-# INLINE decimal #-}
 
 -- | Print a number in the hexadecimal numeral system using lower case
 --   digits.
-lowHex' ∷ (Ord α, Integral α, Printer p)
+lowHex' ∷ (Integral α, Printer p)
         ⇒ p -- ^ Prefix for negative values
         → p -- ^ Zero printer
         → p -- ^ Prefix for positive values
@@ -723,13 +723,13 @@ lowHex' = number' LowHex
 
 -- | Print a number in the hexadecimal numeral system using lower case
 --   digits. Negative values are prefixed with a minus sign.
-lowHex ∷ (Ord α, Integral α, Printer p) ⇒ α → p
+lowHex ∷ (Integral α, Printer p) ⇒ α → p
 lowHex = number LowHex
 {-# INLINE lowHex #-}
 
 -- | Print a number in the hexadecimal numeral system using upper case
 --   digits.
-upHex' ∷ (Ord α, Integral α, Printer p)
+upHex' ∷ (Integral α, Printer p)
        ⇒ p -- ^ Prefix for negative values
        → p -- ^ Zero printer
        → p -- ^ Prefix for positive values
@@ -739,7 +739,7 @@ upHex' = number' UpHex
 
 -- | Print a number in the hexadecimal numeral system using upper case
 --   digits. Negative values are prefixed with a minus sign.
-upHex ∷ (Ord α, Integral α, Printer p) ⇒ α → p
+upHex ∷ (Integral α, Printer p) ⇒ α → p
 upHex = number UpHex
 {-# INLINE upHex #-}
 
