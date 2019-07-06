@@ -1,5 +1,4 @@
 {-# LANGUAGE UnicodeSyntax #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE UnicodeSyntax #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -13,7 +12,6 @@ module Integral
     number'
   ) where
 
-import Data.Typeable (Typeable)
 import Data.Char (chr, ord)
 import Data.Int
 import Data.Word
@@ -33,8 +31,7 @@ class PositionalSystem s where
   {-# INLINE printDigitIn #-}
 
 -- | The binary numeral system.
-data Binary = Binary deriving ( Typeable
-                              , Eq, Ord, Show, Read )
+data Binary = Binary deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem Binary where
   radixIn _ = 2
@@ -43,8 +40,7 @@ instance PositionalSystem Binary where
   {-# INLINE intToDigitIn #-}
 
 -- | The octal numeral system.
-data Octal = Octal deriving ( Typeable
-                            , Eq, Ord, Show, Read )
+data Octal = Octal deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem Octal where
   radixIn _ = 8
@@ -53,8 +49,7 @@ instance PositionalSystem Octal where
   {-# INLINE intToDigitIn #-}
 
 -- | The decimal numeral system.
-data Decimal = Decimal deriving ( Typeable
-                                , Eq, Ord, Show, Read )
+data Decimal = Decimal deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem Decimal where
   radixIn _ = 10
@@ -63,8 +58,7 @@ instance PositionalSystem Decimal where
   {-# INLINE intToDigitIn #-}
 
 -- | The hexadecimal numeral system.
-data Hexadecimal = Hexadecimal deriving ( Typeable
-                                        , Eq, Ord, Show, Read )
+data Hexadecimal = Hexadecimal deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem Hexadecimal where
   radixIn _ = 16
@@ -74,8 +68,7 @@ instance PositionalSystem Hexadecimal where
   {-# INLINE intToDigitIn #-}
 
 -- | The hexadecimal numeral system, using lower case digits.
-data LowHex = LowHex deriving ( Typeable
-                              , Eq, Ord, Show, Read )
+data LowHex = LowHex deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem LowHex where
   radixIn _ = 16
@@ -85,8 +78,7 @@ instance PositionalSystem LowHex where
   {-# INLINE intToDigitIn #-}
 
 -- | The hexadecimal numeral system, using upper case digits.
-data UpHex = UpHex deriving ( Typeable
-                            , Eq, Ord, Show, Read )
+data UpHex = UpHex deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem UpHex where
   radixIn _ = 16
