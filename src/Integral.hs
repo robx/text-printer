@@ -5,8 +5,6 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-
--- | Print integral numbers in common positional numeral systems. 
 module Integral
   (
     number'
@@ -19,18 +17,13 @@ import Prelude hiding (foldr, foldr1, print, lines)
 import Data.String (IsString(..))
 import Data.Monoid (Monoid(..))
 
--- | Positional numeral system.
 class PositionalSystem s where
-  -- | The radix of the system.
   radixIn ∷ Num α ⇒ s → α
-  -- | Map digits to the corresponding numbers. No checks are performed.
   intToDigitIn ∷ s → Int → Char
-  -- | Print a digit.
   printDigitIn ∷ Printer p ⇒ s → Char → p
   printDigitIn _ = char7
   {-# INLINE printDigitIn #-}
 
--- | The binary numeral system.
 data Binary = Binary deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem Binary where
@@ -39,7 +32,6 @@ instance PositionalSystem Binary where
   intToDigitIn _ i = chr $! ord '0' + i
   {-# INLINE intToDigitIn #-}
 
--- | The octal numeral system.
 data Octal = Octal deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem Octal where
@@ -48,7 +40,6 @@ instance PositionalSystem Octal where
   intToDigitIn _ i = chr $! ord '0' + i
   {-# INLINE intToDigitIn #-}
 
--- | The decimal numeral system.
 data Decimal = Decimal deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem Decimal where
@@ -57,7 +48,6 @@ instance PositionalSystem Decimal where
   intToDigitIn _ i = chr $! ord '0' + i
   {-# INLINE intToDigitIn #-}
 
--- | The hexadecimal numeral system.
 data Hexadecimal = Hexadecimal deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem Hexadecimal where
@@ -67,7 +57,6 @@ instance PositionalSystem Hexadecimal where
                    | otherwise = chr $! ord 'A' + (i - 10) 
   {-# INLINE intToDigitIn #-}
 
--- | The hexadecimal numeral system, using lower case digits.
 data LowHex = LowHex deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem LowHex where
@@ -77,7 +66,6 @@ instance PositionalSystem LowHex where
                    | otherwise = chr $! ord 'a' + (i - 10) 
   {-# INLINE intToDigitIn #-}
 
--- | The hexadecimal numeral system, using upper case digits.
 data UpHex = UpHex deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem UpHex where
@@ -87,7 +75,6 @@ instance PositionalSystem UpHex where
                    | otherwise = chr $! ord 'A' + (i - 10) 
   {-# INLINE intToDigitIn #-}
 
--- | Print a number in the specified positional numeral system.
 number' ∷ (PositionalSystem s, Ord α, Integral α, Printer p)
         ⇒ s
         → p -- ^ Prefix for negative values
@@ -124,24 +111,13 @@ number' s neg z pos n = case compare n 0 of
 {-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ LowHex → p → p → p → α → p #-}
 {-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ UpHex → p → p → p → α → p #-}
 
-
--- | Text monoid. 'string' must be equivalent to 'fromString' and be a monoid
---   homomorphism, i.e. @'string' 'mempty' = 'mempty'@ and
---   @'mappend' ('string' /x/) ('string' /y/) = 'string' ('mappend' /x/ /y/)@.
---   Other operations must be monoid homomorphisms that are eqiuvalent (but
---   possibly faster) to the composition of 'string' and the corresponding
---   embedding, e.g. @'text' = 'string' . 'TS.unpack'@.
 class (IsString p, Semigroup p, Monoid p) ⇒ Printer p where
-  -- | Print a character. @'char' /c/@ must be equivalent to
-  --   @'string' [/c/]@, but hopefully is faster.
   char ∷ Char → p
   char c = string [c]
   {-# INLINE char #-}
-  -- | Print an ASCII character, can be faster than 'char'.
   char7 ∷ Char → p
   char7 = char
   {-# INLINE char7 #-}
-  -- | Print a string.
   string ∷ String → p
   string = fromString
   {-# INLINE string #-}
