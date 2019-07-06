@@ -33,11 +33,9 @@ Library
   Default-Language: Haskell2010
   Build-Depends:
     base >= 4.4 && < 5,
-    bytestring >= 0.10,
     text,
     pretty,
-    text-latin1 >= 0.3.1,
-    semigroups >= 0.18.2
+    text-latin1 >= 0.3.1
   Hs-Source-Dirs: src
   GHC-Options: -Wall
   Exposed-Modules:
