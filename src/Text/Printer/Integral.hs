@@ -1,7 +1,5 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE UnicodeSyntax #-}
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE BangPatterns #-}
 
 -- | Print integral numbers in common positional numeral systems. 
@@ -17,8 +15,6 @@ import Data.Typeable (Typeable)
 import Data.Char (chr, ord)
 import Data.Int
 import Data.Word
-import Data.Bits (Bits(..))
-import Data.Monoid (mempty)
 import qualified Text.Ascii as A
 import Text.Printer
 
@@ -53,9 +49,6 @@ class PositionalSystem s where
 
 -- | The binary numeral system.
 data Binary = Binary deriving ( Typeable
-#if __GLASGOW_HASKELL__ >= 706
-                              , Generic
-#endif
                               , Eq, Ord, Show, Read )
 
 instance PositionalSystem Binary where
@@ -80,9 +73,6 @@ instance PositionalSystem Binary where
 
 -- | The octal numeral system.
 data Octal = Octal deriving ( Typeable
-#if __GLASGOW_HASKELL__ >= 706
-                            , Generic
-#endif
                             , Eq, Ord, Show, Read )
 
 instance PositionalSystem Octal where
@@ -107,9 +97,6 @@ instance PositionalSystem Octal where
 
 -- | The decimal numeral system.
 data Decimal = Decimal deriving ( Typeable
-#if __GLASGOW_HASKELL__ >= 706
-                                , Generic
-#endif
                                 , Eq, Ord, Show, Read )
 
 instance PositionalSystem Decimal where
@@ -134,9 +121,6 @@ instance PositionalSystem Decimal where
 
 -- | The hexadecimal numeral system.
 data Hexadecimal = Hexadecimal deriving ( Typeable
-#if __GLASGOW_HASKELL__ >= 706
-                                        , Generic
-#endif
                                         , Eq, Ord, Show, Read )
 
 instance PositionalSystem Hexadecimal where
@@ -162,9 +146,6 @@ instance PositionalSystem Hexadecimal where
 
 -- | The hexadecimal numeral system, using lower case digits.
 data LowHex = LowHex deriving ( Typeable
-#if __GLASGOW_HASKELL__ >= 706
-                              , Generic
-#endif
                               , Eq, Ord, Show, Read )
 
 instance PositionalSystem LowHex where
@@ -190,9 +171,6 @@ instance PositionalSystem LowHex where
 
 -- | The hexadecimal numeral system, using upper case digits.
 data UpHex = UpHex deriving ( Typeable
-#if __GLASGOW_HASKELL__ >= 706
-                            , Generic
-#endif
                             , Eq, Ord, Show, Read )
 
 instance PositionalSystem UpHex where
