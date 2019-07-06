@@ -47,33 +47,6 @@ instance PositionalSystem Decimal where
   intToDigitIn _ i = chr $! ord '0' + i
   {-# INLINE intToDigitIn #-}
 
-data Hexadecimal = Hexadecimal deriving ( Eq, Ord, Show, Read )
-
-instance PositionalSystem Hexadecimal where
-  radixIn _ = 16
-  {-# INLINE radixIn #-}
-  intToDigitIn _ i | i < 10    = chr $! ord '0' + i
-                   | otherwise = chr $! ord 'A' + (i - 10) 
-  {-# INLINE intToDigitIn #-}
-
-data LowHex = LowHex deriving ( Eq, Ord, Show, Read )
-
-instance PositionalSystem LowHex where
-  radixIn _ = 16
-  {-# INLINE radixIn #-}
-  intToDigitIn _ i | i < 10    = chr $! ord '0' + i
-                   | otherwise = chr $! ord 'a' + (i - 10) 
-  {-# INLINE intToDigitIn #-}
-
-data UpHex = UpHex deriving ( Eq, Ord, Show, Read )
-
-instance PositionalSystem UpHex where
-  radixIn _ = 16
-  {-# INLINE radixIn #-}
-  intToDigitIn _ i | i < 10    = chr $! ord '0' + i
-                   | otherwise = chr $! ord 'A' + (i - 10) 
-  {-# INLINE intToDigitIn #-}
-
 number' ∷ (PositionalSystem s, Ord α, Integral α, Printer p)
         ⇒ s
         → p -- ^ Prefix for negative values
@@ -106,9 +79,6 @@ number' s neg z pos n = case compare n 0 of
 {-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Binary → p → p → p → α → p #-}
 {-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Decimal → p → p → p → α → p #-}
 {-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Octal → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Hexadecimal → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ LowHex → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ UpHex → p → p → p → α → p #-}
 
 class (IsString p, Semigroup p, Monoid p) ⇒ Printer p where
   char ∷ Char → p
