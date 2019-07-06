@@ -25,8 +25,6 @@ import Data.Monoid (Monoid(..))
 
 -- | Positional numeral system.
 class PositionalSystem s where
-  -- | The name of the system (e.g. \"binary\", \"decimal\").
-  systemName ∷ s → String
   -- | The radix of the system.
   radixIn ∷ Num α ⇒ s → α
   -- | Test if a character is a digit.
@@ -57,8 +55,6 @@ data Binary = Binary deriving ( Typeable
                               , Eq, Ord, Show, Read )
 
 instance PositionalSystem Binary where
-  systemName _ = "binary"
-  {-# INLINE systemName #-}
   radixIn _ = 2
   {-# INLINE radixIn #-}
   isDigitIn _ = A.isBinDigit
@@ -81,8 +77,6 @@ data Octal = Octal deriving ( Typeable
                             , Eq, Ord, Show, Read )
 
 instance PositionalSystem Octal where
-  systemName _ = "octal"
-  {-# INLINE systemName #-}
   radixIn _ = 8
   {-# INLINE radixIn #-}
   isDigitIn _ = A.isOctDigit
@@ -105,8 +99,6 @@ data Decimal = Decimal deriving ( Typeable
                                 , Eq, Ord, Show, Read )
 
 instance PositionalSystem Decimal where
-  systemName _ = "decimal"
-  {-# INLINE systemName #-}
   radixIn _ = 10
   {-# INLINE radixIn #-}
   isDigitIn _ = A.isDecDigit
@@ -129,8 +121,6 @@ data Hexadecimal = Hexadecimal deriving ( Typeable
                                         , Eq, Ord, Show, Read )
 
 instance PositionalSystem Hexadecimal where
-  systemName _ = "hexadecimal"
-  {-# INLINE systemName #-}
   radixIn _ = 16
   {-# INLINE radixIn #-}
   isDigitIn _ = A.isHexDigit
@@ -154,8 +144,6 @@ data LowHex = LowHex deriving ( Typeable
                               , Eq, Ord, Show, Read )
 
 instance PositionalSystem LowHex where
-  systemName _ = "lower case hexadecimal"
-  {-# INLINE systemName #-}
   radixIn _ = 16
   {-# INLINE radixIn #-}
   isDigitIn _ = A.isLowHexDigit
@@ -179,8 +167,6 @@ data UpHex = UpHex deriving ( Typeable
                             , Eq, Ord, Show, Read )
 
 instance PositionalSystem UpHex where
-  systemName _ = "upper case hexadecimal"
-  {-# INLINE systemName #-}
   radixIn _ = 16
   {-# INLINE radixIn #-}
   isDigitIn _ = A.isUpHexDigit
