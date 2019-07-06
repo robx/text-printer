@@ -27,8 +27,6 @@ class PositionalSystem s where
   -- | The radix of the system.
   radixIn ∷ Num α ⇒ s → α
   -- | Test if a character is a digit.
-  isDigitIn ∷ s → Char → Bool
-  -- | Test if a character is a non-zero digit.
   isNzDigitIn ∷ s → Char → Bool
   -- | Map digits to the corresponding numbers. Return 'Nothing' on
   --   other inputs.
