@@ -7,19 +7,19 @@ module Integral
 
 class PositionalSystem s
 
-data Decimal = Decimal deriving ( Eq, Ord, Show, Read )
+data Decimal = Decimal
 
 instance PositionalSystem Decimal
 
-data Hexadecimal = Hexadecimal deriving ( Eq, Ord, Show, Read )
+data Hexadecimal = Hexadecimal
 
 instance PositionalSystem Hexadecimal
 
-data LowHex = LowHex deriving ( Eq, Ord, Show, Read )
+data LowHex = LowHex
 
 instance PositionalSystem LowHex
 
-data UpHex = UpHex deriving ( Eq, Ord, Show, Read )
+data UpHex = UpHex
 
 instance PositionalSystem UpHex 
 
