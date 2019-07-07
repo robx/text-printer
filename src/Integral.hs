@@ -5,12 +5,9 @@ module Integral
     number'
   ) where
 
-import Data.String (IsString(..))
-import Data.Monoid (Monoid(..))
-
 class PositionalSystem s
 
-data Decimal = Decimal deriving ( Eq, Ord, Show, Read )
+data Decimal
 
 instance PositionalSystem Decimal
 
