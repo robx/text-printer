@@ -5,7 +5,6 @@ module Integral
     f
   ) where
 
-import Data.Int
 import Data.Word
 
 class PositionalSystem s
@@ -33,11 +32,6 @@ f ∷ (PositionalSystem s, Ord a, Integral a)
         -> p -- ^ Prefix for positive values
         -> a -> p
 f = undefined
-{-# SPECIALIZE f ∷ Decimal -> p -> p -> p -> Int -> p #-}
-{-# SPECIALIZE f ∷ Decimal -> p -> p -> p -> Int8 -> p #-}
-{-# SPECIALIZE f ∷ Decimal -> p -> p -> p -> Int16 -> p #-}
-{-# SPECIALIZE f ∷ Decimal -> p -> p -> p -> Int32 -> p #-}
-{-# SPECIALIZE f ∷ Decimal -> p -> p -> p -> Int64 -> p #-}
 {-# SPECIALIZE f ∷ Decimal -> p -> p -> p -> Word -> p #-}
 {-# SPECIALIZE f ∷ Decimal -> p -> p -> p -> Word8 -> p #-}
 {-# SPECIALIZE f ∷ Decimal -> p -> p -> p -> Word16 -> p #-}
