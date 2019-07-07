@@ -12,37 +12,25 @@ import Data.String (IsString(..))
 import Data.Monoid (Monoid(..))
 
 class PositionalSystem s where
-  intToDigitIn ∷ s -> Int -> Char
   printDigitIn ∷ Printer p => s -> Char -> p
   printDigitIn _ = char7
   {-# INLINE printDigitIn #-}
 
 data Decimal = Decimal deriving ( Eq, Ord, Show, Read )
 
-instance PositionalSystem Decimal where
-  intToDigitIn _ i = chr $! ord '0' + i
-  {-# INLINE intToDigitIn #-}
+instance PositionalSystem Decimal
 
 data Hexadecimal = Hexadecimal deriving ( Eq, Ord, Show, Read )
 
-instance PositionalSystem Hexadecimal where
-  intToDigitIn _ i | i < 10    = chr $! ord '0' + i
-                   | otherwise = chr $! ord 'A' + (i - 10) 
-  {-# INLINE intToDigitIn #-}
+instance PositionalSystem Hexadecimal
 
 data LowHex = LowHex deriving ( Eq, Ord, Show, Read )
 
-instance PositionalSystem LowHex where
-  intToDigitIn _ i | i < 10    = chr $! ord '0' + i
-                   | otherwise = chr $! ord 'a' + (i - 10) 
-  {-# INLINE intToDigitIn #-}
+instance PositionalSystem LowHex
 
 data UpHex = UpHex deriving ( Eq, Ord, Show, Read )
 
-instance PositionalSystem UpHex where
-  intToDigitIn _ i | i < 10    = chr $! ord '0' + i
-                   | otherwise = chr $! ord 'A' + (i - 10) 
-  {-# INLINE intToDigitIn #-}
+instance PositionalSystem UpHex 
 
 f ∷ (PositionalSystem s, Ord a, Integral a, Printer p)
         => s
