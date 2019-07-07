@@ -8,4 +8,4 @@ module Integral
 number' :: (Ord a, Integral a)
         => a
 number' = undefined
-{-# SPECIALIZE number' ∷ (Ord a, Integral a) ⇒ a #-}
+{-# SPECIALIZE number' ∷ (Ord a, Integral a) => a #-}
