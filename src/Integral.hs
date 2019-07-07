@@ -11,10 +11,7 @@ import Data.Word
 import Data.String (IsString(..))
 import Data.Monoid (Monoid(..))
 
-class PositionalSystem s where
-  printDigitIn ∷ Printer p => s -> Char -> p
-  printDigitIn _ = char7
-  {-# INLINE printDigitIn #-}
+class PositionalSystem s
 
 data Decimal = Decimal deriving ( Eq, Ord, Show, Read )
 
