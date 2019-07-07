@@ -6,4 +6,4 @@ module M
 
 f :: (Eq a, Ord a) => a
 f = undefined
-{-# SPECIALIZE f ∷ (Eq a, Ord a) => a #-}
+{-# SPECIALIZE f :: (Eq a, Ord a) => a #-}
