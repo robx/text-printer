@@ -7,7 +7,7 @@
 
 module Integral
   (
-    number'
+    f
   ) where
 
 import Data.Char (chr, ord)
@@ -74,41 +74,29 @@ instance PositionalSystem UpHex where
                    | otherwise = chr $! ord 'A' + (i - 10) 
   {-# INLINE intToDigitIn #-}
 
-number' ∷ (PositionalSystem s, Ord α, Integral α, Printer p)
+f ∷ (PositionalSystem s, Ord α, Integral α, Printer p)
         ⇒ s
         → p -- ^ Prefix for negative values
         → p -- ^ Zero printer
         → p -- ^ Prefix for positive values
         → α → p
-number' s neg z pos n = case compare n 0 of
-    LT → go neg q <> printDigitIn s d
-      where (q, r) = quotRem n (negate radix)
-            !d     = intToDigitIn s $ negate $ fromIntegral r
-    EQ → z
-    GT → go pos q <> printDigitIn s d
-      where (q, r) = quotRem n radix
-            !d     = intToDigitIn s $ fromIntegral r
-  where go p 0 = p
-        go p m = go p q <> printDigitIn s d
-          where (q, r) = quotRem m radix
-                !d     = intToDigitIn s $ fromIntegral r
-        radix = radixIn s
-{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Int → p #-}
-{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Int8 → p #-}
-{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Int16 → p #-}
-{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Int32 → p #-}
-{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Int64 → p #-}
-{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word → p #-}
-{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word8 → p #-}
-{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word16 → p #-}
-{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word32 → p #-}
-{-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word64 → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Binary → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Decimal → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Octal → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Hexadecimal → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ LowHex → p → p → p → α → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ UpHex → p → p → p → α → p #-}
+f = undefined
+{-# SPECIALIZE f ∷ Printer p ⇒ Decimal → p → p → p → Int → p #-}
+{-# SPECIALIZE f ∷ Printer p ⇒ Decimal → p → p → p → Int8 → p #-}
+{-# SPECIALIZE f ∷ Printer p ⇒ Decimal → p → p → p → Int16 → p #-}
+{-# SPECIALIZE f ∷ Printer p ⇒ Decimal → p → p → p → Int32 → p #-}
+{-# SPECIALIZE f ∷ Printer p ⇒ Decimal → p → p → p → Int64 → p #-}
+{-# SPECIALIZE f ∷ Printer p ⇒ Decimal → p → p → p → Word → p #-}
+{-# SPECIALIZE f ∷ Printer p ⇒ Decimal → p → p → p → Word8 → p #-}
+{-# SPECIALIZE f ∷ Printer p ⇒ Decimal → p → p → p → Word16 → p #-}
+{-# SPECIALIZE f ∷ Printer p ⇒ Decimal → p → p → p → Word32 → p #-}
+{-# SPECIALIZE f ∷ Printer p ⇒ Decimal → p → p → p → Word64 → p #-}
+{-# SPECIALIZE f ∷ (Ord α, Integral α, Printer p) ⇒ Binary → p → p → p → α → p #-}
+{-# SPECIALIZE f ∷ (Ord α, Integral α, Printer p) ⇒ Decimal → p → p → p → α → p #-}
+{-# SPECIALIZE f ∷ (Ord α, Integral α, Printer p) ⇒ Octal → p → p → p → α → p #-}
+{-# SPECIALIZE f ∷ (Ord α, Integral α, Printer p) ⇒ Hexadecimal → p → p → p → α → p #-}
+{-# SPECIALIZE f ∷ (Ord α, Integral α, Printer p) ⇒ LowHex → p → p → p → α → p #-}
+{-# SPECIALIZE f ∷ (Ord α, Integral α, Printer p) ⇒ UpHex → p → p → p → α → p #-}
 
 class (IsString p, Semigroup p, Monoid p) ⇒ Printer p where
   char ∷ Char → p
