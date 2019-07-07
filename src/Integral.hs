@@ -19,9 +19,6 @@ import Data.Monoid (Monoid(..))
 class PositionalSystem s where
   radixIn ∷ Num α ⇒ s → α
   intToDigitIn ∷ s → Int → Char
-  printDigitIn ∷ Printer p ⇒ s → Char → p
-  printDigitIn _ = char7
-  {-# INLINE printDigitIn #-}
 
 data Decimal = Decimal deriving ( Eq, Ord, Show, Read )
 
@@ -38,15 +35,15 @@ number' ∷ (PositionalSystem s, Ord α, Integral α, Printer p)
         → p -- ^ Prefix for positive values
         → α → p
 number' s neg z pos n = case compare n 0 of
-    LT → go neg q <> printDigitIn s d
+    LT → go neg q <> char7 d
       where (q, r) = quotRem n (negate radix)
             !d     = intToDigitIn s $ negate $ fromIntegral r
     EQ → z
-    GT → go pos q <> printDigitIn s d
+    GT → go pos q <> char7 d
       where (q, r) = quotRem n radix
             !d     = intToDigitIn s $ fromIntegral r
   where go p 0 = p
-        go p m = go p q <> printDigitIn s d
+        go p m = go p q <> char7 d
           where (q, r) = quotRem m radix
                 !d     = intToDigitIn s $ fromIntegral r
         radix = radixIn s
