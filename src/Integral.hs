@@ -10,23 +10,14 @@ module Integral
     number'
   ) where
 
-import Data.Char (chr, ord)
-import Data.Int
-import Data.Word
 import Data.String (IsString(..))
 import Data.Monoid (Monoid(..))
 
-class PositionalSystem s where
-  radixIn ∷ Num α ⇒ s → α
-  intToDigitIn ∷ s → Int → Char
+class PositionalSystem s
 
 data Decimal = Decimal deriving ( Eq, Ord, Show, Read )
 
-instance PositionalSystem Decimal where
-  radixIn _ = 10
-  {-# INLINE radixIn #-}
-  intToDigitIn _ i = chr $! ord '0' + i
-  {-# INLINE intToDigitIn #-}
+instance PositionalSystem Decimal
 
 number' ∷ (PositionalSystem s, Ord α, Integral α, Printer p)
         ⇒ s
@@ -34,28 +25,7 @@ number' ∷ (PositionalSystem s, Ord α, Integral α, Printer p)
         → p -- ^ Zero printer
         → p -- ^ Prefix for positive values
         → α → p
-number' s neg z pos n = case compare n 0 of
-    LT → go neg q <> char7 d
-      where (q, r) = quotRem n (negate radix)
-            !d     = intToDigitIn s $ negate $ fromIntegral r
-    EQ → z
-    GT → go pos q <> char7 d
-      where (q, r) = quotRem n radix
-            !d     = intToDigitIn s $ fromIntegral r
-  where go p 0 = p
-        go p m = go p q <> char7 d
-          where (q, r) = quotRem m radix
-                !d     = intToDigitIn s $ fromIntegral r
-        radix = radixIn s
+number' = undefined
 {-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Decimal → p → p → p → α → p #-}
 
-class (IsString p, Semigroup p, Monoid p) ⇒ Printer p where
-  char ∷ Char → p
-  char c = string [c]
-  {-# INLINE char #-}
-  char7 ∷ Char → p
-  char7 = char
-  {-# INLINE char7 #-}
-  string ∷ String → p
-  string = fromString
-  {-# INLINE string #-}
+class (IsString p, Semigroup p, Monoid p) ⇒ Printer p
