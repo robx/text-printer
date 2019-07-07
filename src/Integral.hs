@@ -23,14 +23,6 @@ class PositionalSystem s where
   printDigitIn _ = char7
   {-# INLINE printDigitIn #-}
 
-data Binary = Binary deriving ( Eq, Ord, Show, Read )
-
-instance PositionalSystem Binary where
-  radixIn _ = 2
-  {-# INLINE radixIn #-}
-  intToDigitIn _ i = chr $! ord '0' + i
-  {-# INLINE intToDigitIn #-}
-
 data Decimal = Decimal deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem Decimal where
@@ -68,7 +60,6 @@ number' s neg z pos n = case compare n 0 of
 {-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word16 → p #-}
 {-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word32 → p #-}
 {-# SPECIALIZE number' ∷ Printer p ⇒ Decimal → p → p → p → Word64 → p #-}
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Binary → p → p → p → α → p #-}
 {-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Decimal → p → p → p → α → p #-}
 
 class (IsString p, Semigroup p, Monoid p) ⇒ Printer p where
