@@ -3,6 +3,7 @@ platform: x64
 cache:
 - "c:\\sr"
 - .stack-work
+- "C:\\Users\\appveyor\\AppData\\Local\\Programs\\stack"
 
 environment:
   global:
