@@ -5,7 +5,7 @@ module Integral
     number'
   ) where
 
-number' ∷ (Ord α, Integral α)
-        ⇒ α → p
+number' ∷ (Ord a, Integral a)
+        ⇒ a → p
 number' = undefined
-{-# SPECIALIZE number' ∷ (Ord α, Integral α) ⇒ α → p #-}
+{-# SPECIALIZE number' ∷ (Ord a, Integral a) ⇒ a → p #-}
