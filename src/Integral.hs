@@ -19,14 +19,14 @@ instance X C
 data D
 instance X D
 
-f ∷ (X s, Ord a, Integral a)
+f ∷ (X s, Eq a, Ord a)
         => s
         -> p -- ^ Prefix for negative values
         -> p -- ^ Zero printer
         -> p -- ^ Prefix for positive values
         -> a -> p
 f = undefined
-{-# SPECIALIZE f ∷ (Ord a, Integral a) => A -> p -> p -> p -> a -> p #-}
-{-# SPECIALIZE f ∷ (Ord a, Integral a) => B -> p -> p -> p -> a -> p #-}
-{-# SPECIALIZE f ∷ (Ord a, Integral a) => C -> p -> p -> p -> a -> p #-}
-{-# SPECIALIZE f ∷ (Ord a, Integral a) => D -> p -> p -> p -> a -> p #-}
+{-# SPECIALIZE f ∷ (Eq a, Ord a) => A -> p -> p -> p -> a -> p #-}
+{-# SPECIALIZE f ∷ (Eq a, Ord a) => B -> p -> p -> p -> a -> p #-}
+{-# SPECIALIZE f ∷ (Eq a, Ord a) => C -> p -> p -> p -> a -> p #-}
+{-# SPECIALIZE f ∷ (Eq a, Ord a) => D -> p -> p -> p -> a -> p #-}
