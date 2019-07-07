@@ -1,9 +1,4 @@
 {-# LANGUAGE UnicodeSyntax #-}
-{-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE UnicodeSyntax #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE FlexibleInstances #-}
 
 module Integral
   (
@@ -20,11 +15,7 @@ data Decimal = Decimal deriving ( Eq, Ord, Show, Read )
 instance PositionalSystem Decimal
 
 number' ∷ (PositionalSystem s, Ord α, Integral α, Printer p)
-        ⇒ s
-        → p -- ^ Prefix for negative values
-        → p -- ^ Zero printer
-        → p -- ^ Prefix for positive values
-        → α → p
+        ⇒ s → p → p → p → α → p
 number' = undefined
 {-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Decimal → p → p → p → α → p #-}
 
