@@ -4,6 +4,6 @@ module M
   ( f
   ) where
 
-f :: (Ord a, Integral a) => a
+f :: (Eq a, Ord a) => a
 f = undefined
-{-# SPECIALIZE f ∷ (Ord a, Integral a) => a #-}
+{-# SPECIALIZE f ∷ (Eq a, Ord a) => a #-}
