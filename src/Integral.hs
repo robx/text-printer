@@ -5,32 +5,28 @@ module Integral
     f
   ) where
 
-class PositionalSystem s
+class X x
 
-data Decimal = Decimal
+data A
+instance X A
 
-instance PositionalSystem Decimal
+data B
+instance X B
 
-data Hexadecimal = Hexadecimal
+data C
+instance X C
 
-instance PositionalSystem Hexadecimal
+data D
+instance X D
 
-data LowHex = LowHex
-
-instance PositionalSystem LowHex
-
-data UpHex = UpHex
-
-instance PositionalSystem UpHex 
-
-f ∷ (PositionalSystem s, Ord a, Integral a)
+f ∷ (X s, Ord a, Integral a)
         => s
         -> p -- ^ Prefix for negative values
         -> p -- ^ Zero printer
         -> p -- ^ Prefix for positive values
         -> a -> p
 f = undefined
-{-# SPECIALIZE f ∷ (Ord a, Integral a) => Decimal -> p -> p -> p -> a -> p #-}
-{-# SPECIALIZE f ∷ (Ord a, Integral a) => Hexadecimal -> p -> p -> p -> a -> p #-}
-{-# SPECIALIZE f ∷ (Ord a, Integral a) => LowHex -> p -> p -> p -> a -> p #-}
-{-# SPECIALIZE f ∷ (Ord a, Integral a) => UpHex -> p -> p -> p -> a -> p #-}
+{-# SPECIALIZE f ∷ (Ord a, Integral a) => A -> p -> p -> p -> a -> p #-}
+{-# SPECIALIZE f ∷ (Ord a, Integral a) => B -> p -> p -> p -> a -> p #-}
+{-# SPECIALIZE f ∷ (Ord a, Integral a) => C -> p -> p -> p -> a -> p #-}
+{-# SPECIALIZE f ∷ (Ord a, Integral a) => D -> p -> p -> p -> a -> p #-}
