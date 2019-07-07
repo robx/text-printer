@@ -15,14 +15,6 @@ data Hexadecimal = Hexadecimal deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem Hexadecimal
 
-data LowHex = LowHex deriving ( Eq, Ord, Show, Read )
-
-instance PositionalSystem LowHex
-
-data UpHex = UpHex deriving ( Eq, Ord, Show, Read )
-
-instance PositionalSystem UpHex 
-
 f ∷ (PositionalSystem s, Ord a, Integral a)
         => s
         -> p -- ^ Prefix for negative values
@@ -32,5 +24,3 @@ f ∷ (PositionalSystem s, Ord a, Integral a)
 f = undefined
 {-# SPECIALIZE f ∷ (Ord a, Integral a) => Decimal -> p -> p -> p -> a -> p #-}
 {-# SPECIALIZE f ∷ (Ord a, Integral a) => Hexadecimal -> p -> p -> p -> a -> p #-}
-{-# SPECIALIZE f ∷ (Ord a, Integral a) => LowHex -> p -> p -> p -> a -> p #-}
-{-# SPECIALIZE f ∷ (Ord a, Integral a) => UpHex -> p -> p -> p -> a -> p #-}
