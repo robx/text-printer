@@ -14,9 +14,7 @@ data Decimal = Decimal deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem Decimal
 
-number' ∷ (PositionalSystem s, Ord α, Integral α, Printer p)
+number' ∷ (PositionalSystem s, Ord α, Integral α)
         ⇒ s → p → p → p → α → p
 number' = undefined
-{-# SPECIALIZE number' ∷ (Ord α, Integral α, Printer p) ⇒ Decimal → p → p → p → α → p #-}
-
-class (IsString p, Semigroup p, Monoid p) ⇒ Printer p
+{-# SPECIALIZE number' ∷ (Ord α, Integral α) ⇒ Decimal → p → p → p → α → p #-}
