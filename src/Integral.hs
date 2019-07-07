@@ -6,6 +6,6 @@ module Integral
   ) where
 
 number' :: (Ord a, Integral a)
-        => a -> p
+        => a
 number' = undefined
-{-# SPECIALIZE number' ∷ (Ord a, Integral a) ⇒ a → p #-}
+{-# SPECIALIZE number' ∷ (Ord a, Integral a) ⇒ a #-}
