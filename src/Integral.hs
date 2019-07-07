@@ -5,11 +5,12 @@ module Integral
     f
   ) where
 
-import Data.Char (chr, ord)
 import Data.Int
 import Data.Word
 import Data.String (IsString(..))
 import Data.Monoid (Monoid(..))
+
+class (IsString p, Semigroup p, Monoid p) => Printer p
 
 class PositionalSystem s
 
@@ -50,14 +51,3 @@ f = undefined
 {-# SPECIALIZE f ∷ (Ord a, Integral a, Printer p) => Hexadecimal -> p -> p -> p -> a -> p #-}
 {-# SPECIALIZE f ∷ (Ord a, Integral a, Printer p) => LowHex -> p -> p -> p -> a -> p #-}
 {-# SPECIALIZE f ∷ (Ord a, Integral a, Printer p) => UpHex -> p -> p -> p -> a -> p #-}
-
-class (IsString p, Semigroup p, Monoid p) => Printer p where
-  char ∷ Char -> p
-  char c = string [c]
-  {-# INLINE char #-}
-  char7 ∷ Char -> p
-  char7 = char
-  {-# INLINE char7 #-}
-  string ∷ String -> p
-  string = fromString
-  {-# INLINE string #-}
