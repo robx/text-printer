@@ -1,9 +1,4 @@
 {-# LANGUAGE UnicodeSyntax #-}
-{-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE UnicodeSyntax #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE FlexibleInstances #-}
 
 module Integral
   (
