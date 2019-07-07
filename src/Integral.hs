@@ -6,6 +6,6 @@ module Integral
   ) where
 
 number' ∷ (Ord α, Integral α)
-        ⇒ p → p → p → α → p
+        ⇒ α → p
 number' = undefined
-{-# SPECIALIZE number' ∷ (Ord α, Integral α) ⇒ p → p → p → α → p #-}
+{-# SPECIALIZE number' ∷ (Ord α, Integral α) ⇒ α → p #-}
