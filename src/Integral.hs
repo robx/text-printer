@@ -23,22 +23,6 @@ class PositionalSystem s where
   printDigitIn _ = char7
   {-# INLINE printDigitIn #-}
 
-data Binary = Binary deriving ( Eq, Ord, Show, Read )
-
-instance PositionalSystem Binary where
-  radixIn _ = 2
-  {-# INLINE radixIn #-}
-  intToDigitIn _ i = chr $! ord '0' + i
-  {-# INLINE intToDigitIn #-}
-
-data Octal = Octal deriving ( Eq, Ord, Show, Read )
-
-instance PositionalSystem Octal where
-  radixIn _ = 8
-  {-# INLINE radixIn #-}
-  intToDigitIn _ i = chr $! ord '0' + i
-  {-# INLINE intToDigitIn #-}
-
 data Decimal = Decimal deriving ( Eq, Ord, Show, Read )
 
 instance PositionalSystem Decimal where
@@ -91,9 +75,7 @@ f = undefined
 {-# SPECIALIZE f ∷ Printer p ⇒ Decimal → p → p → p → Word16 → p #-}
 {-# SPECIALIZE f ∷ Printer p ⇒ Decimal → p → p → p → Word32 → p #-}
 {-# SPECIALIZE f ∷ Printer p ⇒ Decimal → p → p → p → Word64 → p #-}
-{-# SPECIALIZE f ∷ (Ord α, Integral α, Printer p) ⇒ Binary → p → p → p → α → p #-}
 {-# SPECIALIZE f ∷ (Ord α, Integral α, Printer p) ⇒ Decimal → p → p → p → α → p #-}
-{-# SPECIALIZE f ∷ (Ord α, Integral α, Printer p) ⇒ Octal → p → p → p → α → p #-}
 {-# SPECIALIZE f ∷ (Ord α, Integral α, Printer p) ⇒ Hexadecimal → p → p → p → α → p #-}
 {-# SPECIALIZE f ∷ (Ord α, Integral α, Printer p) ⇒ LowHex → p → p → p → α → p #-}
 {-# SPECIALIZE f ∷ (Ord α, Integral α, Printer p) ⇒ UpHex → p → p → p → α → p #-}
