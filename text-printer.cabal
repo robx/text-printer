@@ -16,18 +16,8 @@ Copyright: 2013 Mikhail Vorozhtsov <mikhail.vorozhtsov@gmail.com>
 License: BSD3
 License-File: LICENSE
 
-Extra-Source-Files:
-  README.md
-
-Tested-With: GHC==7.6.3, GHC==7.8.4, GHC==7.10.3, GHC==8.0.2, GHC==8.2.2,
-             GHC==8.4.4, GHC==8.6.1
-
 Cabal-Version: >= 1.10.0
 Build-Type: Simple
-
-Source-Repository head
-  Type: git
-  Location: https://github.com/mvv/text-printer.git
 
 Library
   Default-Language: Haskell2010
@@ -36,4 +26,4 @@ Library
   Hs-Source-Dirs: src
   GHC-Options: -Wall
   Exposed-Modules:
-    Integral
+    M
