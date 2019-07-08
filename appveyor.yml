@@ -11,4 +11,4 @@ install:
 - ls ghc-8.6.5
 
 build_script:
-- ghc-8.6.5/bin/ghc src/M.hs
+- .\\ghc-8.6.5\\bin\\ghc src/M.hs
