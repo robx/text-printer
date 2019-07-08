@@ -6,7 +6,8 @@ environment:
 
 install:
 - curl -sS -oghc.tar.xz --insecure https://downloads.haskell.org/~ghc/8.6.5/ghc-8.6.5-x86_64-unknown-mingw32.tar.xz
-- tar xf ghc.tar.xz
+- 7z x ghx.tar.xz
+- tar xf ghc.tar
 - ls
 
 build_script:
