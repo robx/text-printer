@@ -11,5 +11,5 @@ install:
 - ls ghc-8.6.5
 
 build_script:
-- .\\ghc-8.6.5\\bin\\cabal v2-configure
-- .\\ghc-8.6.5\\bin\\cabal v2-build
+- .\\ghc-8.6.5\\bin\\runghc Setup.hs v2-configure
+- .\\ghc-8.6.5\\bin\\runghc Setup.hs v2-build
