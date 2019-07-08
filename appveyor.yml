@@ -8,7 +8,7 @@ install:
 - curl -sS -oghc.tar.xz --insecure https://downloads.haskell.org/~ghc/8.6.5/ghc-8.6.5-x86_64-unknown-mingw32.tar.xz
 - 7z x ghc.tar.xz
 - tar xf ghc.tar
-- ls
+- ls ghc-8.6.5
 
 build_script:
-- ghc src/M.hs
+- ghc-8.6.5/bin/ghc src/M.hs
